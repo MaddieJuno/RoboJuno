@@ -1,0 +1,15 @@
+.vscode/*
+!.vscode/extensions.json
+
+app/dist/
+app/logs/
+
+app/var/*
+!app/var/conf/
+app/var/conf/*
+!app/var/conf/bestrafungen.json
+!app/var/conf/example.json
+!app/var/conf/standard.json
+
+*.sh
+robojuno.service
