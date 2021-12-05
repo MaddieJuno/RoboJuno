@@ -11,6 +11,7 @@ import {
 	slash,
 	subslash,
 	TextChannel,
+ThreadChannel,
 } from "../../deps.ts";
 import type {
 	ClientOptions,
@@ -41,6 +42,7 @@ export class DiscordBot extends Client {
 	private syncCommands: boolean;
 	private readonly VERSION = "v0.1.2.3";
 	private preCounter = 0;
+	private isPre = false;
 
 	public guild: Guild | undefined;
 	private nonCountedMembers: string[] = [
@@ -66,21 +68,31 @@ export class DiscordBot extends Client {
 		cron("0 */5 * * * *", (): void => {
 			let status: "dnd" | "idle" | "invisible" | "offline" | "online" = "online";
 			let name = "Maddie Juno";
-			let type: "COMPETING" | "CUSTOM_STATUS" | "LISTENING" | "PLAYING" | "STREAMING" | "WATCHING" = "WATCHING";
-			const url = "https://develeon.de/";
+			let type: "COMPETING" | "CUSTOM_STATUS" | "LISTENING" | "PLAYING" | "STREAMING" | "WATCHING" = "LISTENING";
+			let url = "https://develeon.de/";
 
 			switch (this.preCounter) {
 				case 1:
-					name = "mit Develeon64";
-					type = "PLAYING";
+					name = "Develeon64";
+					type = "WATCHING";
+					if (this.isPre) {
+						type = "STREAMING";
+						url = "https://www.twitch.tv/develeon64";
+						this.isPre = false;
+					}
+					else {
+						this.isPre = true;
+					}
 					break;
 				case 2:
 					status = "idle";
 					name = this.VERSION;
+					type = "PLAYING";
 					break;
 				case 3:
 					status = "dnd";
 					name = "¡WIP!";
+					type = "WATCHING";
 					break;
 			}
 
@@ -206,7 +218,17 @@ export class DiscordBot extends Client {
 			if (InstacordChecker.checkMessage(message)) {
 				InstacordChecker.actMessage(message);
 			}
+			else {
+				if (message.channelID === ConfigManager.get().discord.instacordChannel)
+					message.startThread({ name: "Kommentare", autoArchiveDuration: 60 });
+			}
 		}
+	}
+
+	@event("threadCreate")
+	public onThreadCreate (thread: ThreadChannel): void {
+		if (this.user)
+			thread.addUser(this.user.id);
 	}
 
 	@slash("strike")
@@ -363,7 +385,9 @@ export class DiscordBot extends Client {
 		embed.setTitle(`__Version: ${this.VERSION}__`);
 		embed.setDescription("Meinen Code findest du hier:\nhttps://github.com/MaddieJuno/RoboJuno");
 		embed.setThumbnail({ url: "https://cdn.discordapp.com/avatars/913167560172793896/e2c9fc08a2d8870dbb9b53a5e93254b1.webp" });
-		embed.setImage({ url: (await (await fetch("https://github.com/MaddieJuno/RoboJuno")).text()).split("og:image")[1].split("\"")[2] });
+		const repo = (await (await fetch("https://github.com/MaddieJuno/RoboJuno/commits/main")).text()).split("https://github.com/MaddieJuno/RoboJuno/commit/")[1].split("\"")[0];
+		const commit = (await (await fetch(`https://github.com/MaddieJuno/RoboJuno/commit/${repo}`)).text());
+		embed.setImage({ url: commit.split("og:image")[1].split("\"")[2] });
 		interaction.reply({ embeds: [embed.toJSON()] });
 	}
 

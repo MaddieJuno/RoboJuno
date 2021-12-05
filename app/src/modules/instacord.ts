@@ -28,7 +28,8 @@ export class InstacordChecker {
 	}
 
 	public static async actMessage (message: Message): Promise<void> {
-		const reply: Message = await message.reply(`${message.member} bitte keine reinen Texte in diesem Channel.\nDies ist ein Channel nur für Kunst in Form von Bildern. Wenn du über etwas Kreatives reden möchtest, kannst du das gerne in <#${ConfigManager.get().discord.creativeChannel}> tun.`);		message.delete();
+		const reply: Message = await message.reply(`${message.member} bitte keine reinen Texte in diesem Channel.\nDies ist ein Channel nur für Kunst in Form von Bildern. Wenn du über etwas Kreatives reden möchtest, kannst du das gerne in <#${ConfigManager.get().discord.creativeChannel}> tun.\nFür einen Kommentar zu einem Post kannst du den jeweiligen Thread unterhalb benutzen.`);
+		message.delete();
 		setTimeout((): void => {
 			reply.delete();
 		}, 30000);
@@ -38,7 +39,7 @@ export class InstacordChecker {
 				await message.author.send({ embeds: [ { title: "Damit du deinen Text vom #instacord nicht komplett neu schreiben musst, ist hier eine Kopie deiner Nachricht:", description: `\`\`\`${message.content}\`\`\`` } ] });
 			}
 		}
-		catch {
+		finally {
 			if (message.content.length > 0) {
 				(await message.guild?.channels.get(ConfigManager.get().discord.modLogChannel) as TextChannel).send({ embeds: [ { title: "Text im #instacord!", description: `\`\`\`${message.content}\`\`\`` } ] });
 			}
