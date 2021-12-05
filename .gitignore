@@ -1,6 +1,8 @@
 .vscode/*
 !.vscode/extensions.json
+!.vscode/settings.json
 
+app/bin/
 app/dist/
 app/logs/
 
@@ -12,4 +14,5 @@ app/var/conf/*
 !app/var/conf/standard.json
 
 *.sh
-robojuno.service
+*.bat
+*.service

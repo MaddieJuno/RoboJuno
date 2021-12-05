@@ -1,0 +1,33 @@
+{
+  "editor.insertSpaces": false,
+  "editor.rulers": [
+    120,
+    240
+  ],
+  "editor.wrappingIndent": "indent",
+
+  "files.eol": "\n",
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": true,
+  "files.trimTrailingWhitespace": true,
+
+  "deno.enable": true,
+  "deno.codeLens.implementations": true,
+  "deno.codeLens.references": true,
+  "deno.codeLens.referencesAllFunctions": true,
+  "deno.codeLens.testArgs": [
+    "--allow-all"
+  ],
+  "deno.internalDebug": false,
+  "deno.lint": true,
+  "deno.suggest.autoImports": true,
+  "deno.suggest.completeFunctionCalls": true,
+  "deno.suggest.names": true,
+  "deno.suggest.paths": true,
+  "deno.suggest.imports.autoDiscover": true,
+  "deno.suggest.imports.hosts": {
+    "https://deno.land/": true,
+    "https://x.nest.land": true
+  },
+  "deno.unstable": false
+}
