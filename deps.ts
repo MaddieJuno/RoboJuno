@@ -38,6 +38,7 @@ export type {
 	Message,
 	Role,
 	TextChannel,
+	ThreadChannel,
 	UserPayload,
 	User,
 } from "https://code.harmony.rocks/55c6326a6df4d9df469337c575ba5e21e0c4b2d1/mod.ts";
