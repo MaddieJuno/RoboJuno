@@ -39,7 +39,7 @@ interface BotOptions extends ClientOptions {
 
 export class DiscordBot extends Client {
 	private syncCommands: boolean;
-	private readonly VERSION = "v0.1.0.1";
+	private readonly VERSION = "v0.1.1.2";
 	private preCounter = 0;
 
 	public guild: Guild | undefined;
@@ -134,7 +134,7 @@ export class DiscordBot extends Client {
 		if (this.syncCommands) {
 			this.interactions.commands.create(JSON.parse(Deno.readTextFileSync("app/src/interfaces/commands/version.json")), this.guild);
 			this.interactions.commands.create(JSON.parse(Deno.readTextFileSync("app/src/interfaces/commands/strikes.json")), this.guild);
-			(await this.interactions.commands.create(JSON.parse(Deno.readTextFileSync("app/src/interfaces/commands/strike.json")), this.guild)).setPermissions([{ id: "912233386381307914", type: 1, permission: true }, { id: "912234910322937876", type: 1, permission: true }, { id: "912234919638499348", type: 1, permission: true }]);
+			(await this.interactions.commands.create(JSON.parse(Deno.readTextFileSync("app/src/interfaces/commands/strike.json")), this.guild)).setPermissions([{ id: "912786366193098782", type: 1, permission: true }, { id: "912787189857943562", type: 1, permission: true }, { id: "910587532939526154", type: 1, permission: true }]);
 			this.interactions.commands.create(JSON.parse(Deno.readTextFileSync("app/src/interfaces/commands/birthday.json")), this.guild);
 		}
 	}
