@@ -39,7 +39,7 @@ interface BotOptions extends ClientOptions {
 
 export class DiscordBot extends Client {
 	private syncCommands: boolean;
-	private readonly VERSION = "v0.1.0.1";
+	private readonly VERSION = "v0.1.1.2";
 	private preCounter = 0;
 
 	public guild: Guild | undefined;
