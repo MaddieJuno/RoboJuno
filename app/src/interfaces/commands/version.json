@@ -1,0 +1,5 @@
+{
+  "name": "version",
+  "description": "Finde die aktuelle Version des Bots.",
+  "default_permission": true
+}

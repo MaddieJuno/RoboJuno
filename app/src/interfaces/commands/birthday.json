@@ -1,0 +1,58 @@
+{
+  "name": "geburtstag",
+  "description": "Wer hat wann Geburtstag?",
+  "default_permission": true,
+  "options": [
+    {
+      "type": 1,
+      "name": "eintrag",
+      "description": "Trage deinen Geburtstag in die Liste ein.",
+      "options": [
+        {
+          "type": 4,
+          "name": "tag",
+          "description": "Der Tag des Monats",
+          "required": true
+        },
+        {
+          "type": 4,
+          "name": "monat",
+          "description": "Der Geburtsmonat",
+          "required": true
+        },
+        {
+          "type": 4,
+          "name": "jahr",
+          "description": "Dein Geburtsjahr",
+          "required": false
+        }
+      ]
+    },
+    {
+      "type": 1,
+      "name": "wann",
+      "description": "Wann hat wer Geburtstag?",
+      "options": [
+        {
+          "type": 6,
+          "name": "mitglied",
+          "description": "Lösche den Eintrag eines anderen Mitgliedes.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "type": 1,
+      "name": "entfernen",
+      "description": "Lösche den Eintrag aus der Datenbank.",
+      "options": [
+        {
+          "type": 6,
+          "name": "mitglied",
+          "description": "Lösche den Eintrag eines anderen Mitgliedes.",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

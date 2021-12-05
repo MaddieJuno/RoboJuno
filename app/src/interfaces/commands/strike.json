@@ -1,0 +1,19 @@
+{
+  "name": "strike",
+  "description": "Gib einem Mitglied einen Strike. Beim Dritten wird das Mitglied gekickt und beim Sechsten gebannt.",
+  "default_permission": false,
+  "options": [
+    {
+      "type": 6,
+      "name": "member",
+      "description": "Zu verwarnendes Mitglied",
+      "required": true
+    },
+    {
+      "type": 3,
+      "name": "reason",
+      "description": "Aus welchem Grund bekommt das Mitglied einen Strike?",
+      "required": false
+    }
+  ]
+}
