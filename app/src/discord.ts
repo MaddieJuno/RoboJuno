@@ -50,7 +50,7 @@ export class DiscordBot extends Client {
 
 	public constructor (token: string, options?: BotOptions) {
 		super(options);
-		this.syncCommands = options?.syncCommands || true;
+		this.syncCommands = options?.syncCommands || false;
 
 		this.connect(token, Intents.All);
 		this.presence.setStatus("dnd");
@@ -319,7 +319,7 @@ export class DiscordBot extends Client {
 		Deno.writeTextFileSync("app/var/db/geburtstage.json", JSON.stringify(birthdays, null, 2));
 		log.getLogger("Discord").info(`Birthday of ${interaction.user.id} was set`);
 		if (year)
-			interaction.reply({ content: `Du hast am ${day.toString().padStart(2, "0")}.${month.toString().padStart(2, "0")}.${year.toString().padStart(4, "0")} Geburtstag und bist ${this.calcAge(new Date(year, month as number, day as number))} Jare alt! 🥳`, ephemeral: true });
+			interaction.reply({ content: `Du hast am ${day.toString().padStart(2, "0")}.${month.toString().padStart(2, "0")}.${year.toString().padStart(4, "0")} Geburtstag und bist ${this.calcAge(new Date(year, month as number, day as number))} Jahre alt! 🥳`, ephemeral: true });
 		else
 			interaction.reply({ content: `Du hast am ${day.toString().padStart(2, "0")}.${month.toString().padStart(2, "0")}. Geburtstag! 🥳`, ephemeral: true });
 	}
