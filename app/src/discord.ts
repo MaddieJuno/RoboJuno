@@ -227,8 +227,9 @@ export class DiscordBot extends Client {
 
 	@event("threadCreate")
 	public onThreadCreate (thread: ThreadChannel): void {
+		/*thread.join();
 		if (this.user)
-			thread.addUser(this.user.id);
+			thread.addUser(this.user.id);*/
 	}
 
 	@slash("strike")

@@ -24,6 +24,8 @@ export class InstacordChecker {
 			}
 		}
 
+		onlyImages = onlyImages || message.content.includes("instagram.com/p/");
+
 		return message.channelID === ConfigManager.get().discord.instacordChannel && !onlyImages;
 	}
 
