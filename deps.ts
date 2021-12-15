@@ -28,9 +28,10 @@ export {
 	Intents,
 	slash,
 	subslash,
-} from "https://code.harmony.rocks/55c6326a6df4d9df469337c575ba5e21e0c4b2d1/mod.ts";
+} from "https://code.harmony.rocks/7755687024c962d28213e3f4ca5ffa51677af1fb/mod.ts";
 export type {
 	ApplicationCommandInteraction,
+	AuditLogEntry,
 	ChannelPayload,
 	ClientOptions,
 	GuildPayload,
@@ -41,7 +42,7 @@ export type {
 	ThreadChannel,
 	UserPayload,
 	User,
-} from "https://code.harmony.rocks/55c6326a6df4d9df469337c575ba5e21e0c4b2d1/mod.ts";
+} from "https://code.harmony.rocks/7755687024c962d28213e3f4ca5ffa51677af1fb/mod.ts";
 
 export {
 	cron,

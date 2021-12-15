@@ -2,6 +2,7 @@ import {
 	log,
 
 	ApplicationCommandInteraction,
+	AuditLogEntry,
 	AuditLogEvents,
 	Client,
 	cron,
@@ -11,7 +12,8 @@ import {
 	slash,
 	subslash,
 	TextChannel,
-ThreadChannel,
+	ThreadChannel,
+	User,
 } from "../../deps.ts";
 import type {
 	ClientOptions,
@@ -40,11 +42,11 @@ interface BotOptions extends ClientOptions {
 
 export class DiscordBot extends Client {
 	private syncCommands: boolean;
-	private readonly VERSION = "v0.1.3.4";
+	private readonly VERSION = "v0.2.0.5";
 	private preCounter = 0;
 	private isPre = false;
 
-	public guild: Guild | undefined;
+	public static guild: Guild | undefined;
 	private nonCountedMembers: string[] = [
 		"344136468068958218", // Till Gitter
 		"372108947303301124", // Lord Bahn
@@ -62,7 +64,7 @@ export class DiscordBot extends Client {
 	@event("ready")
 	public async onReady (shard: number): Promise<void> {
 		log.getLogger("Discord").info(`Bot is ready on Shard ${shard} and is online!`);
-		this.guild = await this.guilds.get(ConfigManager.get().discord.guild) as Guild;
+		DiscordBot.guild = await this.guilds.get(ConfigManager.get().discord.guild) as Guild;
 		this.updateMemberCount();
 
 		cron("0 */5 * * * *", (): void => {
@@ -134,29 +136,28 @@ export class DiscordBot extends Client {
 
 			if (todays.length === 0) return;
 			else if (todays.length === 1) {
-				(await this.guild?.channels.fetch(ConfigManager.get().discord.birthdayChannel.id) as TextChannel).send(`Heute feiern wir den Geburtstag von ${todays[0]}! 🥳🥳🥳`);
+				(await DiscordBot.guild?.channels.fetch(ConfigManager.get().discord.birthdayChannel.id) as TextChannel).send(`Heute feiern wir den Geburtstag von ${todays[0]}! 🥳🥳🥳`);
 			}
 			else {
 				const last = todays.pop();
 				const births = `${todays.join(", ")} und ${last}`;
-				(await this.guild?.channels.fetch(ConfigManager.get().discord.birthdayChannel.id) as TextChannel).send(`Heute feiern wir die Geburtstage von ${births}! Lasst sie hoch leben! 🥳🥳🥳`);
+				(await DiscordBot.guild?.channels.fetch(ConfigManager.get().discord.birthdayChannel.id) as TextChannel).send(`Heute feiern wir die Geburtstage von ${births}! Lasst sie hoch leben! 🥳🥳🥳`);
 			}
 		});
 
 		if (this.syncCommands) {
-			this.interactions.commands.create(JSON.parse(Deno.readTextFileSync("app/src/interfaces/commands/version.json")), this.guild);
-			this.interactions.commands.create(JSON.parse(Deno.readTextFileSync("app/src/interfaces/commands/strikes.json")), this.guild);
-			(await this.interactions.commands.create(JSON.parse(Deno.readTextFileSync("app/src/interfaces/commands/strike.json")), this.guild)).setPermissions([{ id: "912786366193098782", type: 1, permission: true }, { id: "912787189857943562", type: 1, permission: true }, { id: "910587532939526154", type: 1, permission: true }]);
-			this.interactions.commands.create(JSON.parse(Deno.readTextFileSync("app/src/interfaces/commands/birthday.json")), this.guild);
+			this.interactions.commands.create(JSON.parse(Deno.readTextFileSync("app/src/interfaces/commands/version.json")), DiscordBot.guild);
+			this.interactions.commands.create(JSON.parse(Deno.readTextFileSync("app/src/interfaces/commands/strikes.json")), DiscordBot.guild);
+			(await this.interactions.commands.create(JSON.parse(Deno.readTextFileSync("app/src/interfaces/commands/strike.json")), DiscordBot.guild)).setPermissions([{ id: "912786366193098782", type: 1, permission: true }, { id: "912787189857943562", type: 1, permission: true }, { id: "910587532939526154", type: 1, permission: true }]);
+			this.interactions.commands.create(JSON.parse(Deno.readTextFileSync("app/src/interfaces/commands/birthday.json")), DiscordBot.guild);
 		}
 	}
 
 	@event("guildMemberAdd")
 	public onGuildMemberAdd (member: Member): void {
 		const embed: DiscordEmbed = new DiscordEmbed({ title: "Neuer User!", color: Colors.Yellow });
-		embed.setDescription(`<@${member.user.id}> (${member.user.username}#${member.user.discriminator})`);
+		embed.setDescription(`<@${member.user.id}> (${member.user.tag}) [${member.id}]`);
 		embed.setThumbnail({ url: `https://cdn.discordapp.com/avatars/${member.user.id}/${member.user.avatar}.png` });
-		embed.setAuthor({ name: member.guild.name, icon_url: `https://cdn.discordapp.com/icons/${member.guild.id}/${member.guild.icon}.png` });
 		embed.addField("__Erstellt__", LogFormatter.formatDate(this.calcDateFromId(member.user.id)), true);
 		embed.addField("__Beitritt__", LogFormatter.formatDate(new Date()), true);
 		//embed.addBlankField();
@@ -171,31 +172,53 @@ export class DiscordBot extends Client {
 			fetch(`https://discordapp.com/api/webhooks/${ConfigManager.get().discord.welcomeChannel.id}/${ConfigManager.get().discord.welcomeChannel.token}`, { method: "POST", body: JSON.stringify({ content: `Hallo ${member} und herzlich willkommen auf ***${member.guild.name}***!\nBevor du loslegen kannst, nimm dir bitte etwas Zeit und lies dir <#912785838407024650> durch. Bestätige diese, um dich für den Server freizuschalten.\n\nViel Spaß und ganz viel Freude! ❤️`, username: "Juno Family" }), headers: { "Content-Type": "application/json" } });
 
 		this.updateMemberCount();
-		log.getLogger("Discord").info(`Member ${member.user.username}#${member.user.discriminator} (${member.user.id}) joined the Guild!`);
+		log.getLogger("Discord").info(`Member ${member.user.tag} (${member.user.id}) joined the Guild!`);
 	}
 
 	@event("guildMemberRemove")
 	public async onGuildMemberRemove (member: Member): Promise<void> {
-		//const removed = await this.getLeaveType(member);
-		const embed: DiscordEmbed = await new DiscordEmbed({ color: Colors.Red });
+		const removed = await this.getLeaveType(member);
+		const embed: DiscordEmbed = new DiscordEmbed({ color: Colors.Red });
+		embed.setDescription(member.nick ? `${member.nick} - <@${member.user.id}> (${member.user.tag}) [${member.id}]` : `<@${member.user.id}> (${member.user.tag}) [${member.id}]`);
+		embed.setThumbnail({ url: `https://cdn.discordapp.com/avatars/${member.user.id}/${member.user.avatar}.png` });
+		// embed.setThumbnail({ url: avatarURL(member) });
+		embed.addField("__Verlassen__", LogFormatter.formatDate(new Date()), true);
+		embed.addField("__Beitritt__", LogFormatter.formatDate(new Date(member.joinedAt)), true);
+		embed.addField("__Erstellt__", LogFormatter.formatDate(this.calcDateFromId(member.user.id)), true);
 
-		if (false) { //if (removed) {
-			/*if (leave.action_type === AuditLogEvents.MemberBanAdd) {}
-			else {}*/
-		}
-		else {
+		if (!removed) {
 			embed.setColor(Colors.Yellow);
-			embed.setTitle(`__${member} ist gegangen.__`);
-			embed.setAuthor({ name: member.guild.name, icon_url: `https://cdn.discordapp.com/icons/${member.guild.id}/${member.guild.icon}.png` });
-			embed.addField("__Verlassen__", LogFormatter.formatDate(new Date()), true);
+			embed.setTitle(`__${member.user.tag} ist gegangen.__`);
 
-			embed.setDescription(member.nick ? `${member.nick} - <@${member.user.id}> (${member.user.username}#${member.user.discriminator})` : `<@${member.user.id}> (${member.user.username}#${member.user.discriminator})`);
-			// embed.setThumbnail({ url: avatarURL(member) });
-			embed.setThumbnail({ url: `https://cdn.discordapp.com/avatars/${member.user.id}/${member.user.avatar}.png` });
-			embed.addField("__Beitritt__", LogFormatter.formatDate(new Date(member.joinedAt)), true);
-			embed.addField("__Erstellt__", LogFormatter.formatDate(this.calcDateFromId(member.user.id)), true);
+			log.getLogger("Discord").info(`Member ${member.user.tag} (${member.user.id}) left the Guild!`);
+		}
+		else if ((removed as any).actionType === AuditLogEvents.MemberKick) {
+			embed.setTitle(`__${member.user.tag} wurde gekickt!__`);
+			const kicker = await DiscordBot.guild?.members.fetch(removed.userID);
+			if (kicker) {
+				let kickerString = `${kicker.user.tag}\n${kicker}\n${kicker.id}`;
+				if (kicker.nick) kickerString = `${kicker.nick}\n${kickerString}`;
+				embed.addField("__Kicker__", kickerString, true);
+			}
 
-			log.getLogger("Discord").info(`Member ${member.user.username}#${member.user.discriminator} (${member.user.id}) left the Guild!`);
+			if (removed.reason)
+				embed.addField("__Grund__", removed.reason, true);
+
+			log.getLogger("Discord").info(`Member ${member.user.tag} (${member.user.id}) was kicked!`);
+		}
+		else if ((removed as any).actionType === AuditLogEvents.MemberBanAdd) {
+			embed.setTitle(`__${member.user.tag} wurde gebannt!__`);
+			const banner = await DiscordBot.guild?.members.fetch(removed.userID);
+			if (banner) {
+				let bannerString = `${banner.user.tag}\n${banner}\n${banner.id}`;
+				if (banner.nick) bannerString = `${banner.nick}\n${bannerString}`;
+				embed.addField("__Banner__", bannerString, true);
+			}
+
+			if (removed.reason)
+				embed.addField("__Grund__", removed.reason, true);
+
+			log.getLogger("Discord").info(`Member ${member.user.tag} (${member.user.id}) was BANNED!`);
 		}
 
 		const birthdays = JSON.parse(Deno.readTextFileSync("app/var/db/geburtstage.json"));
@@ -206,10 +229,36 @@ export class DiscordBot extends Client {
 		Deno.writeTextFileSync("app/var/db/geburtstage.json", JSON.stringify(news, null, 2));
 
 		if (ConfigManager.get().discord.memberAdd.token)
-			fetch(`https://discordapp.com/api/webhooks/${ConfigManager.get().discord.memberAdd.id}/${ConfigManager.get().discord.memberAdd.token}`, { method: "POST", body: JSON.stringify({ content: "Achtung @here ⚠️", username: "MemberProtection", embeds: [embed] }), headers: { "Content-Type": "application/json" } });
+			fetch(`https://discordapp.com/api/webhooks/${ConfigManager.get().discord.memberAdd.id}/${ConfigManager.get().discord.memberAdd.token}`, { method: "POST", body: JSON.stringify({ content: `Achtung @${removed ? " everyone" : "here"} ⚠️`, username: "MemberProtection", embeds: [embed] }), headers: { "Content-Type": "application/json" } });
 		/*else
 			await sendMessage(ConfigManager.get().discord.memberAdd.id, { content: "Achtung @here ⚠️", embed: embed.toJSON() });*/
 		this.updateMemberCount();
+	}
+
+	@event("guildBanRemove")
+	private async onBanRemove (guild: Guild, user: User): Promise<void> {
+		const embed: DiscordEmbed = new DiscordEmbed({ color: Colors.Purple });
+		embed.setTitle(`__${user.tag} wurde entbannt!__`);
+		embed.setDescription(`<@${user.id}> (${user.tag}) [${user.id}]`);
+		embed.setThumbnail({ url: `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` });
+		// embed.setThumbnail({ url: avatarURL(member) });
+		embed.addField("__Erstellt__", LogFormatter.formatDate(this.calcDateFromId(user.id)), false);
+
+		const auditLog = await DiscordBot.guild?.fetchAuditLog({ limit: 1, actionType: AuditLogEvents.MemberBanRemove });
+
+		if (auditLog && (auditLog?.entries[0] as any).targetID === user.id) {
+			const banner = await DiscordBot.guild?.members.fetch(auditLog?.entries[0].userID);
+			if (banner) {
+				let bannerString = `${banner.user.tag}\n${banner}\n${banner.id}`;
+				if (banner.nick) bannerString = `${banner.nick}\n${bannerString}`;
+				embed.addField("__Banner__", bannerString, true);
+			}
+		}
+
+		if (ConfigManager.get().discord.memberAdd.token)
+			fetch(`https://discordapp.com/api/webhooks/${ConfigManager.get().discord.memberAdd.id}/${ConfigManager.get().discord.memberAdd.token}`, { method: "POST", body: JSON.stringify({ content: `Achtung @here ⚠️`, username: "MemberProtection", embeds: [embed] }), headers: { "Content-Type": "application/json" } });
+
+		log.getLogger("Discord").info(`User ${user.tag} (${user.id}) was unbanned!`);
 	}
 
 	@event("messageCreate")
@@ -227,8 +276,9 @@ export class DiscordBot extends Client {
 
 	@event("threadCreate")
 	public onThreadCreate (thread: ThreadChannel): void {
-		if (this.user)
-			thread.addUser(this.user.id);
+		thread.join();
+		/*if (this.user)
+			thread.addUser(this.user.id);*/
 	}
 
 	@slash("strike")
@@ -254,7 +304,7 @@ export class DiscordBot extends Client {
 			}
 			finally {
 				member.kick(`${strikeCount} Strikes gesammelt!\n${interaction.options[1] || ""}`.trim());
-				log.getLogger("Discord").warning(`Member ${member.user.username}#${member.user.discriminator} (${member.user.id}) bekam den ${strikeCount}. Strike und wurde gekickt!`);
+				log.getLogger("Discord").warning(`Member ${member.user.tag} (${member.user.id}) bekam den ${strikeCount}. Strike und wurde gekickt!`);
 			}
 		}
 		else if (strikeCount === 5) {
@@ -264,7 +314,7 @@ export class DiscordBot extends Client {
 			}
 			finally {
 				member.ban(`Trotz Kick insgesamt ${strikeCount} Strikes gesammelt!\n${interaction.options[1] || ""}`.trim());
-				log.getLogger("Discord").warning(`Member ${member.user.username}#${member.user.discriminator} (${member.user.id}) bekam den ${strikeCount}. Strike und wurde gebannt!`);
+				log.getLogger("Discord").warning(`Member ${member.user.tag} (${member.user.id}) bekam den ${strikeCount}. Strike und wurde gebannt!`);
 			}
 		}
 		else {
@@ -273,7 +323,7 @@ export class DiscordBot extends Client {
 				await member.user.send(`Du hast auf dem Server *${interaction.guild?.name}* jetzt **${strikeCount} Strikes** gesammelt.\nPass in Zukunft besser auf die *Regeln* und dein *Verhalten* auf, damit du keine weiteren Strikes bekommst!`);
 			}
 			finally {
-				log.getLogger("Discord").warning(`Member ${member.user.username}#${member.user.discriminator} (${member.user.id}) bekam den ${strikeCount}. Strike!`);
+				log.getLogger("Discord").warning(`Member ${member.user.tag} (${member.user.id}) bekam den ${strikeCount}. Strike!`);
 			}
 		}
 	}
@@ -381,13 +431,19 @@ export class DiscordBot extends Client {
 	@slash("version")
 	private async onVersion (interaction: ApplicationCommandInteraction): Promise<void> {
 		const embed = new DiscordEmbed();
-		embed.setAuthor({ name: interaction.member?.displayName || interaction.user.username, icon_url: interaction.user.avatarURL() })
 		embed.setTitle(`__Version: ${this.VERSION}__`);
-		embed.setDescription("Meinen Code findest du hier:\nhttps://github.com/MaddieJuno/RoboJuno");
-		embed.setThumbnail({ url: "https://cdn.discordapp.com/avatars/913167560172793896/e2c9fc08a2d8870dbb9b53a5e93254b1.webp" });
+		embed.setThumbnail({ url: `https://cdn.discordapp.com/avatars/${this.user?.id}/${this.user?.avatar}.png` });
 		const repo = (await (await fetch("https://github.com/MaddieJuno/RoboJuno/commits/main")).text()).split("https://github.com/MaddieJuno/RoboJuno/commit/")[1].split("\"")[0];
 		const commit = (await (await fetch(`https://github.com/MaddieJuno/RoboJuno/commit/${repo}`)).text());
 		embed.setImage({ url: commit.split("og:image")[1].split("\"")[2] });
+
+		//let changelog = (await fetch("https://raw.githubusercontent.com/MaddieJuno/RoboJuno/main/CHANGELOG.md")).text().split("#")[8];
+		const changelog = Deno.readTextFileSync("app/var/changelog.txt").trim();
+		embed.setDescription((await (await fetch("https://raw.githubusercontent.com/MaddieJuno/RoboJuno/main/README.md")).text()).split("# Robo Juno")[1].split("#")[0].trim());
+		embed.addField("__Changelog__", changelog, false);
+		embed.addField("__Author__", "Ich werde entwickelt von:\n<@298215920709664768> (Develeon#1010)\nGitHub: [Develeon64](https://github.com/Develeon64)", true);
+		embed.addField("__Code__", "Mein Code ist auf GitHub unter\n[MaddieJuno/RoboJuno](https://github.com/MaddieJuno/RoboJuno)", true);
+
 		interaction.reply({ embeds: [embed.toJSON()] });
 	}
 
@@ -402,9 +458,9 @@ export class DiscordBot extends Client {
 	private async updateMemberCount(): Promise<void> {
 		let userCount = 0;
 		const countedMembers: string[] = [];
-		const members = await this.guild?.members.array() || [];
+		const members = await DiscordBot.guild?.members.array() || [];
 		for (let member of members) {
-			member = await this.guild?.members.fetch(member.id) as Member;
+			member = await DiscordBot.guild?.members.fetch(member.id) as Member;
 			if (!member.user.bot && !this.nonCountedMembers.includes(member.id) && !(countedMembers.includes(member.user.username.toLowerCase()) || (member.nick && countedMembers.includes(member.nick.toLowerCase())))) {
 				countedMembers.push(member.user.username.toLowerCase());
 				if (member.nick) countedMembers.push(member.nick.toLowerCase());
@@ -412,13 +468,13 @@ export class DiscordBot extends Client {
 			}
 		}
 
-		(await this.guild?.channels.get(ConfigManager.get().discord.countChannel.id))?.setName(`Mitglieder: ${userCount}`);
+		(await DiscordBot.guild?.channels.get(ConfigManager.get().discord.countChannel.id))?.setName(`Mitglieder: ${userCount}`);
 		log.getLogger("Discord").debug(`Member-Count updated: ${userCount} members`);
 	}
 
-	/*private async getLeaveType (member: Member): Promise<AuditLogEntry | null> {
-		const kickLog = await this.guild?.fetchAuditLog({ limit: 1, actionType: AuditLogEvents.MemberKick });
-		const banLog = await this.guild?.fetchAuditLog({ limit: 1, actionType: AuditLogEvents.MemberBanAdd });
+	private async getLeaveType (member: Member): Promise<AuditLogEntry | null> {
+		const kickLog = await DiscordBot.guild?.fetchAuditLog({ limit: 1, actionType: AuditLogEvents.MemberKick });
+		const banLog = await DiscordBot.guild?.fetchAuditLog({ limit: 1, actionType: AuditLogEvents.MemberBanAdd });
 		let auditLog;
 
 		if (kickLog && banLog) auditLog = this.calcDateFromId(kickLog?.entries[0].id || "0") > this.calcDateFromId(banLog?.entries[0].id || "0") ? kickLog : banLog;
@@ -426,9 +482,9 @@ export class DiscordBot extends Client {
 		else if (!kickLog && banLog) auditLog = banLog;
 		else return null;
 
-		if (this.calcDateFromId(auditLog.entries[0].id) < new Date(member.joinedAt) || auditLog.entries[0].target_id !== member.id) return null;
+		if (this.calcDateFromId(auditLog.entries[0].id) < new Date(member.joinedAt) || (auditLog.entries[0] as any).targetID !== member.id) return null;
 		else return auditLog.entries[0];
-	}*/
+	}
 
 	private calcDateFromId (id: string): Date {
 		return new Date(Number(BigInt.asUintN(64, BigInt(id)) >> 22n) + 1420070400000);

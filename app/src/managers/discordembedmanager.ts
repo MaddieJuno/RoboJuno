@@ -1,4 +1,5 @@
 // tslint:disable-next-line: max-line-length
+import { DiscordBot } from "../discord.ts";
 import type {
 	DiscordAuthor,
 	DiscordEmbed as Embed,
@@ -41,7 +42,7 @@ export class DiscordEmbed {
 		this.thumbnail = embed?.thumbnail || undefined;
 		this.video = embed?.video || undefined;
 		//this.provider = embed?.provider || { name: "Develeon Software", url: "https://www.develeon.de/" };
-		this.setAuthor(embed?.author);
+		this.setAuthor(embed?.author || { name: DiscordBot.guild?.name, icon_url: `https://cdn.discordapp.com/icons/${DiscordBot.guild?.id}/${DiscordBot.guild?.icon}.png` });
 		if (embed?.fields) this.setFields(embed?.fields);
 	}
 
@@ -228,9 +229,9 @@ export class DiscordEmbed {
 }
 
 export enum Colors {
-	DarkGray = 4144959,
+	DarkGrey = 4144959,
 	Gray = 8355711,
-	LightGray = 12566463,
+	LightGrey = 12566463,
 	Blue = 4161471,
 	Yellow = 12549951,
 	LightGreen = 4177791,
