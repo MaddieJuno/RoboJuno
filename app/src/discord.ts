@@ -42,7 +42,7 @@ interface BotOptions extends ClientOptions {
 
 export class DiscordBot extends Client {
 	private syncCommands: boolean;
-	private readonly VERSION = "v0.2.0.5";
+	private readonly VERSION = "v0.2.1.6";
 	private preCounter = 0;
 	private isPre = false;
 
@@ -155,7 +155,7 @@ export class DiscordBot extends Client {
 
 	@event("guildMemberAdd")
 	public onGuildMemberAdd (member: Member): void {
-		const embed: DiscordEmbed = new DiscordEmbed({ title: "Neuer User!", color: Colors.Yellow });
+		const embed: DiscordEmbed = new DiscordEmbed({ title: `__${member.user.tag} ist neu gekommen!__`, color: Colors.Yellow });
 		embed.setDescription(`<@${member.user.id}> (${member.user.tag}) [${member.id}]`);
 		embed.setThumbnail({ url: `https://cdn.discordapp.com/avatars/${member.user.id}/${member.user.avatar}.png` });
 		embed.addField("__Erstellt__", LogFormatter.formatDate(this.calcDateFromId(member.user.id)), true);
@@ -229,7 +229,7 @@ export class DiscordBot extends Client {
 		Deno.writeTextFileSync("app/var/db/geburtstage.json", JSON.stringify(news, null, 2));
 
 		if (ConfigManager.get().discord.memberAdd.token)
-			fetch(`https://discordapp.com/api/webhooks/${ConfigManager.get().discord.memberAdd.id}/${ConfigManager.get().discord.memberAdd.token}`, { method: "POST", body: JSON.stringify({ content: `Achtung @${removed ? " everyone" : "here"} ⚠️`, username: "MemberProtection", embeds: [embed] }), headers: { "Content-Type": "application/json" } });
+			fetch(`https://discordapp.com/api/webhooks/${ConfigManager.get().discord.memberAdd.id}/${ConfigManager.get().discord.memberAdd.token}`, { method: "POST", body: JSON.stringify({ content: `Achtung @${removed ? "everyone" : "here"} ⚠️`, username: "MemberProtection", embeds: [embed] }), headers: { "Content-Type": "application/json" } });
 		/*else
 			await sendMessage(ConfigManager.get().discord.memberAdd.id, { content: "Achtung @here ⚠️", embed: embed.toJSON() });*/
 		this.updateMemberCount();
