@@ -31,6 +31,7 @@ export {
 } from "https://code.harmony.rocks/7755687024c962d28213e3f4ca5ffa51677af1fb/mod.ts";
 export type {
 	ApplicationCommandInteraction,
+	AuditLogEntry,
 	ChannelPayload,
 	ClientOptions,
 	GuildPayload,

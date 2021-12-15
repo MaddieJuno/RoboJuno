@@ -9,7 +9,7 @@ import type {
 } from "../interfaces/types/appconfig.ts";
 
 export class ConfigManager {
-	private static readonly CONFIGPATH: string = "app/var/";
+	private static readonly CONFIGPATH: string = "app/var/conf/";
 	private static readonly CONFIGNAME: string = "config.json";
 	private static readonly CONFIGKEY: string = "config";
 
