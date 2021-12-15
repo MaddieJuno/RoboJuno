@@ -12,6 +12,8 @@ import {
 	subslash,
 	TextChannel,
 ThreadChannel,
+AuditLogEntry,
+User,
 } from "../../deps.ts";
 import type {
 	ClientOptions,
@@ -154,7 +156,7 @@ export class DiscordBot extends Client {
 	@event("guildMemberAdd")
 	public onGuildMemberAdd (member: Member): void {
 		const embed: DiscordEmbed = new DiscordEmbed({ title: "Neuer User!", color: Colors.Yellow });
-		embed.setDescription(`<@${member.user.id}> (${member.user.username}#${member.user.discriminator})`);
+		embed.setDescription(`<@${member.user.id}> (${member.user.tag}) [${member.id}]`);
 		embed.setThumbnail({ url: `https://cdn.discordapp.com/avatars/${member.user.id}/${member.user.avatar}.png` });
 		embed.setAuthor({ name: member.guild.name, icon_url: `https://cdn.discordapp.com/icons/${member.guild.id}/${member.guild.icon}.png` });
 		embed.addField("__Erstellt__", LogFormatter.formatDate(this.calcDateFromId(member.user.id)), true);
@@ -171,31 +173,54 @@ export class DiscordBot extends Client {
 			fetch(`https://discordapp.com/api/webhooks/${ConfigManager.get().discord.welcomeChannel.id}/${ConfigManager.get().discord.welcomeChannel.token}`, { method: "POST", body: JSON.stringify({ content: `Hallo ${member} und herzlich willkommen auf ***${member.guild.name}***!\nBevor du loslegen kannst, nimm dir bitte etwas Zeit und lies dir <#912785838407024650> durch. Bestätige diese, um dich für den Server freizuschalten.\n\nViel Spaß und ganz viel Freude! ❤️`, username: "Juno Family" }), headers: { "Content-Type": "application/json" } });
 
 		this.updateMemberCount();
-		log.getLogger("Discord").info(`Member ${member.user.username}#${member.user.discriminator} (${member.user.id}) joined the Guild!`);
+		log.getLogger("Discord").info(`Member ${member.user.tag} (${member.user.id}) joined the Guild!`);
 	}
 
 	@event("guildMemberRemove")
 	public async onGuildMemberRemove (member: Member): Promise<void> {
-		//const removed = await this.getLeaveType(member);
-		const embed: DiscordEmbed = await new DiscordEmbed({ color: Colors.Red });
+		const removed = await this.getLeaveType(member);
+		const embed: DiscordEmbed = new DiscordEmbed({ color: Colors.Red });
+		embed.setAuthor({ name: member.guild.name, icon_url: `https://cdn.discordapp.com/icons/${member.guild.id}/${member.guild.icon}.png` });
+		embed.setDescription(member.nick ? `${member.nick} - <@${member.user.id}> (${member.user.tag}) [${member.id}]` : `<@${member.user.id}> (${member.user.tag}) [${member.id}]`);
+		embed.setThumbnail({ url: `https://cdn.discordapp.com/avatars/${member.user.id}/${member.user.avatar}.png` });
+		// embed.setThumbnail({ url: avatarURL(member) });
+		embed.addField("__Verlassen__", LogFormatter.formatDate(new Date()), true);
+		embed.addField("__Beitritt__", LogFormatter.formatDate(new Date(member.joinedAt)), true);
+		embed.addField("__Erstellt__", LogFormatter.formatDate(this.calcDateFromId(member.user.id)), true);
 
-		if (false) { //if (removed) {
-			/*if (leave.action_type === AuditLogEvents.MemberBanAdd) {}
-			else {}*/
-		}
-		else {
+		if (!removed) {
 			embed.setColor(Colors.Yellow);
-			embed.setTitle(`__${member} ist gegangen.__`);
-			embed.setAuthor({ name: member.guild.name, icon_url: `https://cdn.discordapp.com/icons/${member.guild.id}/${member.guild.icon}.png` });
-			embed.addField("__Verlassen__", LogFormatter.formatDate(new Date()), true);
+			embed.setTitle(`__${member.user.tag} ist gegangen.__`);
 
-			embed.setDescription(member.nick ? `${member.nick} - <@${member.user.id}> (${member.user.username}#${member.user.discriminator})` : `<@${member.user.id}> (${member.user.username}#${member.user.discriminator})`);
-			// embed.setThumbnail({ url: avatarURL(member) });
-			embed.setThumbnail({ url: `https://cdn.discordapp.com/avatars/${member.user.id}/${member.user.avatar}.png` });
-			embed.addField("__Beitritt__", LogFormatter.formatDate(new Date(member.joinedAt)), true);
-			embed.addField("__Erstellt__", LogFormatter.formatDate(this.calcDateFromId(member.user.id)), true);
+			log.getLogger("Discord").info(`Member ${member.user.tag} (${member.user.id}) left the Guild!`);
+		}
+		else if ((removed as any).actionType === AuditLogEvents.MemberKick) {
+			embed.setTitle(`__${member.user.tag} wurde gekickt!__`);
+			const kicker = await this.guild?.members.fetch(removed.userID);
+			if (kicker) {
+				let kickerString = `${kicker.user.tag}\n${kicker}\n${kicker.id}`;
+				if (kicker.nick) kickerString = `${kicker.nick}\n${kickerString}`;
+				embed.addField("__Kicker__", kickerString, true);
+			}
 
-			log.getLogger("Discord").info(`Member ${member.user.username}#${member.user.discriminator} (${member.user.id}) left the Guild!`);
+			if (removed.reason)
+				embed.addField("__Grund__", removed.reason, true);
+
+			log.getLogger("Discord").info(`Member ${member.user.tag} (${member.user.id}) was kicked!`);
+		}
+		else if ((removed as any).actionType === AuditLogEvents.MemberBanAdd) {
+			embed.setTitle(`__${member.user.tag} wurde gebannt!__`);
+			const banner = await this.guild?.members.fetch(removed.userID);
+			if (banner) {
+				let bannerString = `${banner.user.tag}\n${banner}\n${banner.id}`;
+				if (banner.nick) bannerString = `${banner.nick}\n${bannerString}`;
+				embed.addField("__Banner__", bannerString, true);
+			}
+
+			if (removed.reason)
+				embed.addField("__Grund__", removed.reason, true);
+
+			log.getLogger("Discord").info(`Member ${member.user.tag} (${member.user.id}) was BANNED!`);
 		}
 
 		const birthdays = JSON.parse(Deno.readTextFileSync("app/var/db/geburtstage.json"));
@@ -206,10 +231,37 @@ export class DiscordBot extends Client {
 		Deno.writeTextFileSync("app/var/db/geburtstage.json", JSON.stringify(news, null, 2));
 
 		if (ConfigManager.get().discord.memberAdd.token)
-			fetch(`https://discordapp.com/api/webhooks/${ConfigManager.get().discord.memberAdd.id}/${ConfigManager.get().discord.memberAdd.token}`, { method: "POST", body: JSON.stringify({ content: "Achtung @here ⚠️", username: "MemberProtection", embeds: [embed] }), headers: { "Content-Type": "application/json" } });
+			fetch(`https://discordapp.com/api/webhooks/${ConfigManager.get().discord.memberAdd.id}/${ConfigManager.get().discord.memberAdd.token}`, { method: "POST", body: JSON.stringify({ content: `Achtung @${removed ? " everyone" : "here"} ⚠️`, username: "MemberProtection", embeds: [embed] }), headers: { "Content-Type": "application/json" } });
 		/*else
 			await sendMessage(ConfigManager.get().discord.memberAdd.id, { content: "Achtung @here ⚠️", embed: embed.toJSON() });*/
 		this.updateMemberCount();
+	}
+
+	@event("guildBanRemove")
+	private async onBanRemove (guild: Guild, user: User): Promise<void> {
+		const embed: DiscordEmbed = new DiscordEmbed({ color: Colors.Purple });
+		embed.setTitle(`__${user.tag} wurde entbannt!__`);
+		embed.setAuthor({ name: guild.name, icon_url: `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png` });
+		embed.setDescription(`<@${user.id}> (${user.tag}) [${user.id}]`);
+		embed.setThumbnail({ url: `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` });
+		// embed.setThumbnail({ url: avatarURL(member) });
+		embed.addField("__Erstellt__", LogFormatter.formatDate(this.calcDateFromId(user.id)), false);
+
+		const auditLog = await this.guild?.fetchAuditLog({ limit: 1, actionType: AuditLogEvents.MemberBanRemove });
+
+		if (auditLog && (auditLog?.entries[0] as any).targetID === user.id) {
+			const banner = await this.guild?.members.fetch(auditLog?.entries[0].userID);
+			if (banner) {
+				let bannerString = `${banner.user.tag}\n${banner}\n${banner.id}`;
+				if (banner.nick) bannerString = `${banner.nick}\n${bannerString}`;
+				embed.addField("__Banner__", bannerString, true);
+			}
+		}
+
+		if (ConfigManager.get().discord.memberAdd.token)
+			fetch(`https://discordapp.com/api/webhooks/${ConfigManager.get().discord.memberAdd.id}/${ConfigManager.get().discord.memberAdd.token}`, { method: "POST", body: JSON.stringify({ content: `Achtung @here ⚠️`, username: "MemberProtection", embeds: [embed] }), headers: { "Content-Type": "application/json" } });
+
+		log.getLogger("Discord").info(`User ${user.tag} (${user.id}) was unbanned!`);
 	}
 
 	@event("messageCreate")
@@ -227,8 +279,8 @@ export class DiscordBot extends Client {
 
 	@event("threadCreate")
 	public onThreadCreate (thread: ThreadChannel): void {
-		/*thread.join();
-		if (this.user)
+		thread.join();
+		/*if (this.user)
 			thread.addUser(this.user.id);*/
 	}
 
@@ -255,7 +307,7 @@ export class DiscordBot extends Client {
 			}
 			finally {
 				member.kick(`${strikeCount} Strikes gesammelt!\n${interaction.options[1] || ""}`.trim());
-				log.getLogger("Discord").warning(`Member ${member.user.username}#${member.user.discriminator} (${member.user.id}) bekam den ${strikeCount}. Strike und wurde gekickt!`);
+				log.getLogger("Discord").warning(`Member ${member.user.tag} (${member.user.id}) bekam den ${strikeCount}. Strike und wurde gekickt!`);
 			}
 		}
 		else if (strikeCount === 5) {
@@ -265,7 +317,7 @@ export class DiscordBot extends Client {
 			}
 			finally {
 				member.ban(`Trotz Kick insgesamt ${strikeCount} Strikes gesammelt!\n${interaction.options[1] || ""}`.trim());
-				log.getLogger("Discord").warning(`Member ${member.user.username}#${member.user.discriminator} (${member.user.id}) bekam den ${strikeCount}. Strike und wurde gebannt!`);
+				log.getLogger("Discord").warning(`Member ${member.user.tag} (${member.user.id}) bekam den ${strikeCount}. Strike und wurde gebannt!`);
 			}
 		}
 		else {
@@ -274,7 +326,7 @@ export class DiscordBot extends Client {
 				await member.user.send(`Du hast auf dem Server *${interaction.guild?.name}* jetzt **${strikeCount} Strikes** gesammelt.\nPass in Zukunft besser auf die *Regeln* und dein *Verhalten* auf, damit du keine weiteren Strikes bekommst!`);
 			}
 			finally {
-				log.getLogger("Discord").warning(`Member ${member.user.username}#${member.user.discriminator} (${member.user.id}) bekam den ${strikeCount}. Strike!`);
+				log.getLogger("Discord").warning(`Member ${member.user.tag} (${member.user.id}) bekam den ${strikeCount}. Strike!`);
 			}
 		}
 	}
@@ -417,7 +469,7 @@ export class DiscordBot extends Client {
 		log.getLogger("Discord").debug(`Member-Count updated: ${userCount} members`);
 	}
 
-	/*private async getLeaveType (member: Member): Promise<AuditLogEntry | null> {
+	private async getLeaveType (member: Member): Promise<AuditLogEntry | null> {
 		const kickLog = await this.guild?.fetchAuditLog({ limit: 1, actionType: AuditLogEvents.MemberKick });
 		const banLog = await this.guild?.fetchAuditLog({ limit: 1, actionType: AuditLogEvents.MemberBanAdd });
 		let auditLog;
@@ -427,9 +479,9 @@ export class DiscordBot extends Client {
 		else if (!kickLog && banLog) auditLog = banLog;
 		else return null;
 
-		if (this.calcDateFromId(auditLog.entries[0].id) < new Date(member.joinedAt) || auditLog.entries[0].target_id !== member.id) return null;
+		if (this.calcDateFromId(auditLog.entries[0].id) < new Date(member.joinedAt) || (auditLog.entries[0] as any).targetID !== member.id) return null;
 		else return auditLog.entries[0];
-	}*/
+	}
 
 	private calcDateFromId (id: string): Date {
 		return new Date(Number(BigInt.asUintN(64, BigInt(id)) >> 22n) + 1420070400000);
