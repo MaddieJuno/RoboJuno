@@ -1,6 +1,6 @@
 import {
 	Embed as DiscordEmbed,
-} from "../../../../deps.ts";
+} from "../../../deps.ts";
 import {
 	DiscordEmbed as EmbedPayload
 } from "./discord.ts";

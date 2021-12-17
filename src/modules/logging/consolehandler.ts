@@ -1,10 +1,10 @@
 import {
 	BaseHandler as Handler,
 	LogLevels,
-} from "../../../../deps.ts"
+} from "../../../deps.ts"
 import type{
 	LogRecord,
-} from "../../../../deps.ts";
+} from "../../../deps.ts";
 import {
 	black,
 	bold,
@@ -14,7 +14,7 @@ import {
 	brightYellow,
 	inverse,
 	red,
-} from "../../../../deps.ts";
+} from "../../../deps.ts";
 
 export class ConsoleHandler extends Handler {
 	public format (logRecord: LogRecord): string {

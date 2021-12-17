@@ -1,10 +1,10 @@
 import {
 	BaseHandler as Handler,
 	LogLevels,
-} from "../../../../deps.ts";
+} from "../../../deps.ts";
 import type {
 	LogRecord,
-} from "../../../../deps.ts";
+} from "../../../deps.ts";
 import {
 	ConfigManager,
 } from "../../managers/configmanager.ts";

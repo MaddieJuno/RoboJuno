@@ -2,12 +2,12 @@ import {
 	Channel,
 	Guild,
 	User,
-} from "../../../../deps.ts";
+} from "../../../deps.ts";
 import type {
 	ChannelPayload,
 	GuildPayload,
 	UserPayload,
-} from "../../../../deps.ts";
+} from "../../../deps.ts";
 
 export type AllowedMentions = {
 	parse?: ["roles", "users", "everyone"],

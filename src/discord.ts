@@ -14,13 +14,13 @@ import {
 	TextChannel,
 	ThreadChannel,
 	User,
-} from "../../deps.ts";
+} from "../deps.ts";
 import type {
 	ClientOptions,
 	Member,
 	Message,
 	Role,
-} from "../../deps.ts";
+} from "../deps.ts";
 
 import {
 	LogFormatter,
@@ -35,6 +35,12 @@ import {
 import {
 	InstacordChecker,
 } from "./modules/instacord.ts";
+
+import {
+	BirthdayCommand,
+	StrikeCommand,
+	VersionCommand,
+} from "./interfaces/commands/commands.ts";
 
 interface BotOptions extends ClientOptions {
 	syncCommands?: boolean;
@@ -54,7 +60,7 @@ export class DiscordBot extends Client {
 
 	public constructor (token: string, options?: BotOptions) {
 		super(options);
-		this.syncCommands = options?.syncCommands || false;
+		this.syncCommands = options?.syncCommands || true;
 
 		this.connect(token, Intents.All);
 		this.presence.setStatus("dnd");
@@ -106,7 +112,7 @@ export class DiscordBot extends Client {
 		cron("5 5 */4 * * *", (): void => {this.updateMemberCount();});
 		cron("0 0 0 * * *", (): void => { // Delete old Strikes
 			const news: {[key: string]: number[]} = {};
-			const strikes = JSON.parse(Deno.readTextFileSync("app/var/db/strikes.json"));
+			const strikes = JSON.parse(Deno.readTextFileSync("var/db/strikes.json"));
 
 			for (const id in strikes) {
 				const list = [];
@@ -116,12 +122,12 @@ export class DiscordBot extends Client {
 				if (list.length > 0) news[id] = list;
 			}
 
-			Deno.writeTextFileSync("app/var/db/strikes.json", JSON.stringify(news));
+			Deno.writeTextFileSync("var/db/strikes.json", JSON.stringify(news));
 			log.getLogger("Discord").info("Strikes wurden überprüft");
 		});
 		cron("0 0 6 * * *", async (): Promise<void> => {
 			const now = new Date();
-			const birthdays = JSON.parse(Deno.readTextFileSync("app/var/db/geburtstage.json"));
+			const birthdays = JSON.parse(Deno.readTextFileSync("var/db/geburtstage.json"));
 			const todays: string[] = [];
 			for (const birth in birthdays) {
 				if (birthdays[birth].day === now.getDate() && birthdays[birth].month === now.getMonth() + 1) {
@@ -146,10 +152,10 @@ export class DiscordBot extends Client {
 		});
 
 		if (this.syncCommands) {
-			this.interactions.commands.create(JSON.parse(Deno.readTextFileSync("app/src/interfaces/commands/version.json")), DiscordBot.guild);
-			this.interactions.commands.create(JSON.parse(Deno.readTextFileSync("app/src/interfaces/commands/strikes.json")), DiscordBot.guild);
-			(await this.interactions.commands.create(JSON.parse(Deno.readTextFileSync("app/src/interfaces/commands/strike.json")), DiscordBot.guild)).setPermissions([{ id: "912786366193098782", type: 1, permission: true }, { id: "912787189857943562", type: 1, permission: true }, { id: "910587532939526154", type: 1, permission: true }]);
-			this.interactions.commands.create(JSON.parse(Deno.readTextFileSync("app/src/interfaces/commands/birthday.json")), DiscordBot.guild);
+			this.interactions.commands.create(VersionCommand.command, DiscordBot.guild);
+			this.interactions.commands.create(BirthdayCommand.command, DiscordBot.guild);
+			this.interactions.commands.create(StrikeCommand.strikesCommand, DiscordBot.guild);
+			(await this.interactions.commands.create(StrikeCommand.strikeCommand, DiscordBot.guild)).setPermissions([{ id: "912786366193098782", type: 1, permission: true }, { id: "912787189857943562", type: 1, permission: true }, { id: "910587532939526154", type: 1, permission: true }]);
 		}
 	}
 
@@ -221,12 +227,12 @@ export class DiscordBot extends Client {
 			log.getLogger("Discord").info(`Member ${member.user.tag} (${member.user.id}) was BANNED!`);
 		}
 
-		const birthdays = JSON.parse(Deno.readTextFileSync("app/var/db/geburtstage.json"));
+		const birthdays = JSON.parse(Deno.readTextFileSync("var/db/geburtstage.json"));
 		const news: any = {};
 		for (const birth in birthdays) {
 			if (birth !== member.id) news[birth] = birthdays[birth];
 		}
-		Deno.writeTextFileSync("app/var/db/geburtstage.json", JSON.stringify(news, null, 2));
+		Deno.writeTextFileSync("var/db/geburtstage.json", JSON.stringify(news, null, 2));
 
 		if (ConfigManager.get().discord.memberAdd.token)
 			fetch(`https://discordapp.com/api/webhooks/${ConfigManager.get().discord.memberAdd.id}/${ConfigManager.get().discord.memberAdd.token}`, { method: "POST", body: JSON.stringify({ content: `Achtung @${removed ? "everyone" : "here"} ⚠️`, username: "MemberProtection", embeds: [embed] }), headers: { "Content-Type": "application/json" } });
@@ -287,13 +293,13 @@ export class DiscordBot extends Client {
 			interaction.reply({ content: `Ein <@&${ConfigManager.get().discord.modRole}> oder Bot kann keinen Strike bekommen!`, ephemeral: true });
 			return;
 		}
-		const strikes = JSON.parse(Deno.readTextFileSync("app/var/db/strikes.json"));
+		const strikes = JSON.parse(Deno.readTextFileSync("var/db/strikes.json"));
 		if (!strikes[interaction.options[0].value]) strikes[interaction.options[0].value] = [];
 		if (interaction.options.length === 1)
 			strikes[interaction.options[0].value].push({ time: Date.now() });
 		else
 			strikes[interaction.options[0].value].push({ time: Date.now(), reason: interaction.options[1].value });
-		Deno.writeTextFileSync("app/var/db/strikes.json", JSON.stringify(strikes));
+		Deno.writeTextFileSync("var/db/strikes.json", JSON.stringify(strikes));
 		const strikeCount = strikes[interaction.options[0].value].length;
 		const member = interaction.resolved.members[interaction.options[0].value];
 
@@ -334,7 +340,7 @@ export class DiscordBot extends Client {
 			interaction.reply({ content: `Nur ein <@&${ConfigManager.get().discord.modRole}> kann die Strikes anderer Mitglieder einsehen.`, ephemeral: true });
 		}
 		else {
-			const strikes = JSON.parse(Deno.readTextFileSync("app/var/db/strikes.json"));
+			const strikes = JSON.parse(Deno.readTextFileSync("var/db/strikes.json"));
 			if (interaction.options.length === 0) {
 				const embed: DiscordEmbed = new DiscordEmbed({ color: Colors.Green });
 				embed.setTitle("Deine Strikes");
@@ -355,7 +361,7 @@ export class DiscordBot extends Client {
 
 	@subslash("geburtstag", "eintrag")
 	private onBirthdayAdd (interaction: ApplicationCommandInteraction): void {
-		const birthdays = JSON.parse(Deno.readTextFileSync("app/var/db/geburtstage.json"));
+		const birthdays = JSON.parse(Deno.readTextFileSync("var/db/geburtstage.json"));
 
 		const day = interaction.option("tag") || 0;
 		const month = interaction.option("monat") || 0;
@@ -388,7 +394,7 @@ export class DiscordBot extends Client {
 
 		const birthday = { day, month, year };
 		birthdays[interaction.user.id] = birthday;
-		Deno.writeTextFileSync("app/var/db/geburtstage.json", JSON.stringify(birthdays, null, 2));
+		Deno.writeTextFileSync("var/db/geburtstage.json", JSON.stringify(birthdays, null, 2));
 		log.getLogger("Discord").info(`Birthday of ${interaction.user.id} was set`);
 		if (year)
 			interaction.reply({ content: `Du hast am ${day.toString().padStart(2, "0")}.${month.toString().padStart(2, "0")}.${year.toString().padStart(4, "0")} Geburtstag und bist ${this.calcAge(new Date(year, month as number, day as number))} Jahre alt! 🥳`, ephemeral: true });
@@ -403,9 +409,9 @@ export class DiscordBot extends Client {
 		}
 		else {
 			const member = interaction.options[0]?.value || interaction.user.id;
-			const birthdays = JSON.parse(Deno.readTextFileSync("app/var/db/geburtstage.json"));
+			const birthdays = JSON.parse(Deno.readTextFileSync("var/db/geburtstage.json"));
 			if (birthdays[member]) delete birthdays[member];
-			Deno.writeTextFileSync("app/var/db/geburtstage.json", JSON.stringify(birthdays, null, 2));
+			Deno.writeTextFileSync("var/db/geburtstage.json", JSON.stringify(birthdays, null, 2));
 			log.getLogger("Discord").info(`Birthday of ${interaction.user.id} was removed`);
 			interaction.reply({ content: "Dein Geburtstag wurde aus der Datenbank gelöscht!", ephemeral: true });
 		}
@@ -414,7 +420,7 @@ export class DiscordBot extends Client {
 	@subslash("geburtstag", "wann")
 	private onBirthdayWhen (interaction: ApplicationCommandInteraction): void {
 		const member = interaction.options[0]?.value || interaction.user.id;
-		const birthday = JSON.parse(Deno.readTextFileSync("app/var/db/geburtstage.json"))[member];
+		const birthday = JSON.parse(Deno.readTextFileSync("var/db/geburtstage.json"))[member];
 		if (birthday) {
 			if (birthday.year) {
 				interaction.reply({ content: `Der Geburtstag von <@${member}> ist am ${birthday.day.toString().padStart(2, "0")}.${birthday.month.toString().padStart(2, "0")}.${birthday.year.toString().padStart(4, "0")}! 🥳\nDas Mitglied ist ${this.calcAge(new Date(birthday.year, birthday.month, birthday.day))} Jahre alt.` });
@@ -438,7 +444,7 @@ export class DiscordBot extends Client {
 		embed.setImage({ url: commit.split("og:image")[1].split("\"")[2] });
 
 		//let changelog = (await fetch("https://raw.githubusercontent.com/MaddieJuno/RoboJuno/main/CHANGELOG.md")).text().split("#")[8];
-		const changelog = Deno.readTextFileSync("app/var/changelog.txt").trim();
+		const changelog = Deno.readTextFileSync("var/changelog.txt").trim();
 		embed.setDescription((await (await fetch("https://raw.githubusercontent.com/MaddieJuno/RoboJuno/main/README.md")).text()).split("# Robo Juno")[1].split("#")[0].trim());
 		embed.addField("__Changelog__", changelog, false);
 		embed.addField("__Author__", "Ich werde entwickelt von:\n<@298215920709664768> (Develeon#1010)\nGitHub: [Develeon64](https://github.com/Develeon64)", true);

@@ -2,17 +2,17 @@
 !.vscode/extensions.json
 !.vscode/settings.json
 
-app/bin/
-app/dist/
-app/logs/
+bin/
+dist/
+logs/
 
-app/var/*
-!app/var/changes.txt
-!app/var/changelog.txt
-!app/var/conf/
-app/var/conf/*
-!app/var/conf/example.json
-!app/var/conf/standard.json
+var/*
+!var/changes.txt
+!var/changelog.txt
+!var/conf/
+var/conf/*
+!var/conf/example.json
+!var/conf/standard.json
 
 *.sh
 *.bat

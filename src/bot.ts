@@ -3,7 +3,7 @@ import {
 	FileHandler,
 	log,
 	LogRecord,
- } from "../../deps.ts";
+ } from "../deps.ts";
 import {
  ConfigManager,
 } from "./managers/configmanager.ts";
@@ -24,7 +24,7 @@ export class RoboJuno {
 		log.setup({
 			handlers: {
 				console: new ConsoleHandler("DEBUG", { formatter: (logRecord: LogRecord): string => LogFormatter.format(logRecord) }),
-				file: new FileHandler("DEBUG", { filename: `app/logs/WhBot_${LogFormatter.formatDate(new Date(), { file: true })}.log`, formatter: (logRecord: LogRecord): string => LogFormatter.format(logRecord) }),
+				file: new FileHandler("DEBUG", { filename: `logs/WhBot_${LogFormatter.formatDate(new Date(), { file: true })}.log`, formatter: (logRecord: LogRecord): string => LogFormatter.format(logRecord) }),
 				discord: new DiscordHandler("DEBUG", { formatter: (logRecord: LogRecord): string => LogFormatter.format(logRecord) })
 			},
 			loggers: {

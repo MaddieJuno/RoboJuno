@@ -1,9 +1,9 @@
 import {
 	FileHandler as Handler,
-} from "../../../../deps.ts";
+} from "../../../deps.ts";
 import type {
 	LogRecord,
-} from "../../../../deps.ts";
+} from "../../../deps.ts";
 
 export class FileHandler extends Handler {
 	public handle (logRecord: LogRecord): void {
