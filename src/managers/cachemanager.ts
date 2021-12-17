@@ -1,7 +1,5 @@
 // deno-lint-ignore-file no-explicit-any
-import type {
-	CacheDataSet,
-} from "../interfaces/types/chachedata.ts";
+import type { CacheDataSet } from "../interfaces/types/chachedata.ts";
 
 export class CacheManager {
 	private static cachedData: { [property: string]: CacheDataSet } = {};

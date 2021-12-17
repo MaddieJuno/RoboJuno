@@ -1,9 +1,5 @@
-import {
-	Embed as DiscordEmbed,
-} from "../../../deps.ts";
-import {
-	DiscordEmbed as EmbedPayload
-} from "./discord.ts";
+import { Embed as DiscordEmbed } from "../../../deps.ts";
+import { DiscordEmbed as EmbedPayload } from "./discord.ts";
 
 export class Embed extends DiscordEmbed {
 	constructor(data?: EmbedPayload) {

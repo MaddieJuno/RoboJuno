@@ -1,6 +1,4 @@
 import {
-	log,
-
 	ApplicationCommandInteraction,
 	AuditLogEntry,
 	AuditLogEvents,
@@ -14,6 +12,8 @@ import {
 	TextChannel,
 	ThreadChannel,
 	User,
+
+	log,
 } from "../deps.ts";
 import type {
 	ClientOptions,
@@ -22,19 +22,13 @@ import type {
 	Role,
 } from "../deps.ts";
 
-import {
-	LogFormatter,
-} from "./modules/logging/formatter.ts";
-import {
-	ConfigManager,
-} from "./managers/configmanager.ts";
+import { LogFormatter } from "./modules/logging/formatter.ts";
+import { ConfigManager } from "./managers/configmanager.ts";
 import {
 	Colors,
 	DiscordEmbed,
 } from "./managers/discordembedmanager.ts";
-import {
-	InstacordChecker,
-} from "./modules/instacord.ts";
+import { InstacordChecker } from "./modules/instacord.ts";
 
 import {
 	BirthdayCommand,
@@ -60,7 +54,7 @@ export class DiscordBot extends Client {
 
 	public constructor (token: string, options?: BotOptions) {
 		super(options);
-		this.syncCommands = options?.syncCommands || true;
+		this.syncCommands = options?.syncCommands || false;
 
 		this.connect(token, Intents.All);
 		this.presence.setStatus("dnd");

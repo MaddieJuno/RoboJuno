@@ -1,12 +1,6 @@
-import {
-	log,
-} from "../../deps.ts";
-import {
-	CacheManager,
-} from "./cachemanager.ts";
-import type {
-	AppConfig,
-} from "../interfaces/types/appconfig.ts";
+import { log } from "../../deps.ts";
+import { CacheManager } from "./cachemanager.ts";
+import type { AppConfig } from "../interfaces/types/appconfig.ts";
 
 export class ConfigManager {
 	private static readonly CONFIGPATH: string = "var/conf/";
