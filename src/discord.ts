@@ -104,7 +104,7 @@ export class DiscordBot extends Client {
 			log.getLogger("Discord").debug(`Setting status to "${status} - ${type} ${name}"`);
 		});
 		cron("5 5 */4 * * *", (): void => {this.updateMemberCount();});
-		cron("0 0 0 * * *", (): void => { // Delete old Strikes
+		cron("2 0 0 * * *", (): void => { // Delete old Strikes
 			const news: {[key: string]: number[]} = {};
 			const strikes = JSON.parse(Deno.readTextFileSync("var/db/strikes.json"));
 

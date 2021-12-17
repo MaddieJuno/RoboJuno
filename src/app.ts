@@ -59,7 +59,7 @@ async function logSetup(): Promise<void> {
 	});
 }
 
-cron("2 0 0 * * *", async (): Promise<void> => await logSetup());
+cron("0 0 0 * * *", async (): Promise<void> => await logSetup());
 await logSetup();
 
 const _bot: DiscordBot = new DiscordBot(ConfigManager.get().discord.token);
