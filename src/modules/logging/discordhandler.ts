@@ -1,13 +1,9 @@
 import {
 	BaseHandler as Handler,
 	LogLevels,
-} from "../../../../deps.ts";
-import type {
-	LogRecord,
-} from "../../../../deps.ts";
-import {
-	ConfigManager,
-} from "../../managers/configmanager.ts";
+} from "../../../deps.ts";
+import type { LogRecord } from "../../../deps.ts";
+import { ConfigManager } from "../../managers/configmanager.ts";
 
 export class DiscordHandler extends Handler {
 	public format (logRecord: LogRecord): string {

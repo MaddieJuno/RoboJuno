@@ -2,17 +2,28 @@
 !.vscode/extensions.json
 !.vscode/settings.json
 
-app/bin/
-app/dist/
-app/logs/
+bin/
+bin/*
+!bin/.gitkeep
+dist/
+dist/*
+!dist/.gitkeep
+logs/*
+!logs/.gitkeep
 
-app/var/*
-!app/var/changes.txt
-!app/var/changelog.txt
-!app/var/conf/
-app/var/conf/*
-!app/var/conf/example.json
-!app/var/conf/standard.json
+var/*
+!var/.gitkeep
+!var/changes.txt
+!var/changelog.txt
+!var/conf/
+var/conf/*
+!var/conf/.gitkeep
+!var/conf/example.json
+!var/conf/standard.json
+!var/db/
+var/db/*
+!var/db/.gitkeep
+
 
 *.sh
 *.bat

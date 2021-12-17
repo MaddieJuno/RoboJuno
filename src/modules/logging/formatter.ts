@@ -1,6 +1,4 @@
-import type {
-	LogRecord,
-} from "../../../../deps.ts";
+import type { LogRecord } from "../../../deps.ts";
 
 export class LogFormatter {
 	public static format(logRecord: LogRecord): string {

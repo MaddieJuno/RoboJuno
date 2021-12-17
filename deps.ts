@@ -19,6 +19,7 @@ export type {
 } from "https://deno.land/x/oak@v10.0.0/mod.ts";*/
 
 export {
+	ApplicationCommandOptionType,
 	AuditLogEvents,
 	Channel,
 	Client,
@@ -30,7 +31,9 @@ export {
 	subslash,
 } from "https://code.harmony.rocks/7755687024c962d28213e3f4ca5ffa51677af1fb/mod.ts";
 export type {
+	ApplicationCommand,
 	ApplicationCommandInteraction,
+	ApplicationCommandPartial,
 	AuditLogEntry,
 	ChannelPayload,
 	ClientOptions,

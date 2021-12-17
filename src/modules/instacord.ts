@@ -2,9 +2,12 @@ import {
 	log,
 	Message,
 	TextChannel,
-} from "../../../deps.ts";
+} from "../../deps.ts";
 import { ConfigManager } from "../managers/configmanager.ts";
-import { Colors, DiscordEmbed } from "../managers/discordembedmanager.ts";
+import {
+	Colors,
+	DiscordEmbed,
+} from "../managers/discordembedmanager.ts";
 
 export class InstacordChecker {
 	private static fileEndings: string[] = [

@@ -11,12 +11,14 @@
   "files.trimFinalNewlines": true,
   "files.trimTrailingWhitespace": true,
 
+  "deno.config": "deno.jsonc",
   "deno.enable": true,
   "deno.codeLens.implementations": true,
   "deno.codeLens.references": true,
   "deno.codeLens.referencesAllFunctions": true,
   "deno.codeLens.testArgs": [
-    "--allow-all"
+    "--allow-all",
+    "--config deno.jsonc"
   ],
   "deno.internalDebug": false,
   "deno.lint": true,
