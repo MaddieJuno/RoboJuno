@@ -42,7 +42,7 @@ interface BotOptions extends ClientOptions {
 
 export class DiscordBot extends Client {
 	private syncCommands: boolean;
-	private readonly VERSION = "v0.2.2.7";
+	private readonly VERSION = "v1.0.0.8";
 	private preCounter = 0;
 	private isPre = false;
 
@@ -433,7 +433,7 @@ export class DiscordBot extends Client {
 		const embed = new DiscordEmbed();
 		embed.setTitle(`__Version: ${this.VERSION}__`);
 		embed.setThumbnail({ url: `https://cdn.discordapp.com/avatars/${this.user?.id}/${this.user?.avatar}.png` });
-		const repo = (await (await fetch("https://github.com/MaddieJuno/RoboJuno/commits/main")).text()).split("https://github.com/MaddieJuno/RoboJuno/commit/")[1].split("\"")[0];
+		const repo = (await (await fetch(`https://github.com/MaddieJuno/RoboJuno/releases/tag/${this.VERSION.split(".").slice(0, -1).join(".")}`)).text()).split("/MaddieJuno/RoboJuno/commit/")[1].split("\"")[0];
 		const commit = (await (await fetch(`https://github.com/MaddieJuno/RoboJuno/commit/${repo}`)).text());
 		embed.setImage({ url: commit.split("og:image")[1].split("\"")[2] });
 
