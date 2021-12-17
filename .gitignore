@@ -3,16 +3,27 @@
 !.vscode/settings.json
 
 bin/
+bin/*
+!bin/.gitkeep
 dist/
-logs/
+dist/*
+!dist/.gitkeep
+logs/*
+!logs/.gitkeep
 
 var/*
+!var/.gitkeep
 !var/changes.txt
 !var/changelog.txt
 !var/conf/
 var/conf/*
+!var/conf/.gitkeep
 !var/conf/example.json
 !var/conf/standard.json
+!var/db/
+var/db/*
+!var/db/.gitkeep
+
 
 *.sh
 *.bat
