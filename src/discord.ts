@@ -433,7 +433,7 @@ export class DiscordBot extends Client {
 		const embed = new DiscordEmbed();
 		embed.setTitle(`__Version: ${this.VERSION}__`);
 		embed.setThumbnail({ url: `https://cdn.discordapp.com/avatars/${this.user?.id}/${this.user?.avatar}.png` });
-		const repo = (await (await fetch("https://github.com/MaddieJuno/RoboJuno/commits/main")).text()).split("https://github.com/MaddieJuno/RoboJuno/commit/")[1].split("\"")[0];
+		const repo = (await (await fetch(`https://github.com/MaddieJuno/RoboJuno/releases/tag/${this.VERSION.split(".").slice(0, -1).join(".")}`)).text()).split("/MaddieJuno/RoboJuno/commit/")[1].split("\"")[0];
 		const commit = (await (await fetch(`https://github.com/MaddieJuno/RoboJuno/commit/${repo}`)).text());
 		embed.setImage({ url: commit.split("og:image")[1].split("\"")[2] });
 
