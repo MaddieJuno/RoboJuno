@@ -285,6 +285,7 @@ export class DiscordBot extends Client {
 			thread.addUser(this.user.id);*/
 	}
 
+<<<<<<< HEAD
 	@event("interactionCreate")
 	private onInteractionCreate (interaction: Interaction): void {
 		if (interaction.isMessageComponent()) {
@@ -339,6 +340,17 @@ export class DiscordBot extends Client {
 				}
 			}
 		}
+=======
+	@event()
+	private error (error: Error): void {
+		log.getLogger("Discord").error(error);
+	}
+
+	@event("gatewayError")
+	private onGatewayError (error: ErrorEvent, nums: any): void {
+		log.getLogger("Discord").error(error.error);
+		log.getLogger("Discord").error(nums);
+>>>>>>> feature/error-handler
 	}
 
 	@slash("strike")
