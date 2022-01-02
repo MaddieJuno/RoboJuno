@@ -9,8 +9,8 @@ export class Command {
 		options: [
 			{
 				type: ApplicationCommandOptionType.SUB_COMMAND,
-				name: "tictactoe",
-				description: "Spiele Tic-Tac-Toe!",
+				name: "schnickschnackschnuck",
+				description: "Spiele Schere, Stein, Papier gegen jemanden!",
 				options: [
 					{
 						type: ApplicationCommandOptionType.USER,

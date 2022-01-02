@@ -45,7 +45,7 @@ interface BotOptions extends ClientOptions {
 
 export class DiscordBot extends Client {
 	private syncCommands: boolean;
-	private readonly VERSION = "v1.1.4.13";
+	private readonly VERSION = "v1.1.5.14";
 	private preCounter = 0;
 	private isPre = false;
 
@@ -289,15 +289,15 @@ export class DiscordBot extends Client {
 	private onInteractionCreate (interaction: Interaction): void {
 		if (interaction.isMessageComponent()) {
 			const args = (interaction.data as any).custom_id.split("|");
-			if (args[0] === "tictactoe") {
+			if (args[0] === "rockpaperscissors") {
 				if (interaction.user.id !== args[1] && interaction.user.id !== args[2]) {
 					interaction.reply({ content: "Du kannst nicht bei einem fremden Spiel mitmachen. Wenn du selbst ein Spiel spielen möchtest, fordere jemanden heraus!\nDu erkennst Spiele, an denen du teilnehmen kannst, an einer Markierung deines Namens. Also, wenn die Nachricht gelb erscheint.", ephemeral: true });
 					return;
 				}
 
 				const games = JSON.parse(Deno.readTextFileSync("var/db/minispiele.json"));
-				for (const g in games.tictactoe) {
-					const game = games.tictactoe[g];
+				for (const g in games.rps) {
+					const game = games.rps[g];
 					if (game.challenger.id === args[1] && game.challenged.id === args[2]) {
 						if (interaction.user.id === game.challenger.id) {
 							if (game.challenger.choice) {
@@ -330,10 +330,10 @@ export class DiscordBot extends Client {
 
 							clearTimeout(game.id);
 							const arr = [];
-							for (const a in games.tictactoe) {
-								if (a !== g) arr.push(games.tictactow[a]);
+							for (const a in games.rps) {
+								if (a !== g) arr.push(games.rps[a]);
 							}
-							games.tictactoe = arr;
+							games.rps = arr;
 						}
 						Deno.writeTextFileSync("var/db/minispiele.json", JSON.stringify(games));
 						break;
@@ -501,21 +501,20 @@ export class DiscordBot extends Client {
 		}
 	}
 
-	@subslash("minigame", "tictactoe")
-	private async onTicTacToe (interaction: ApplicationCommandInteraction): Promise<void> {
+	@subslash("minigame", "schnickschnackschnuck")
+	private async onSchnickSchnackSchnuck (interaction: ApplicationCommandInteraction): Promise<void> {
 		if (interaction.channel?.id !== ConfigManager.get().discord.gameChannel) {
 			interaction.reply({ content: `Beschränke Minispiele bitte nur auf den <#${ConfigManager.get().discord.gameChannel}>, damit der Chat hier übersichtlich bleibt.`, ephemeral: true });
 			return;
 		}
-
-		for (const game of JSON.parse(Deno.readTextFileSync("var/db/minispiele.json")).tictactoe) {
+		for (const game of JSON.parse(Deno.readTextFileSync("var/db/minispiele.json")).rps) {
 			if ((game.challenger.id === interaction.user.id || game.challenged.id === interaction.user.id) && (game.challenger.id === interaction.options[0].value || game.challenged.id === interaction.options[0].value)) {
 				interaction.reply({ content: "Zwischen euch beiden läuft bereits ein Spiel. Beende erst das Andere!", ephemeral: true });
 				return;
 			}
 		}
 
-		const embed = new DiscordEmbed({ color: Colors.LightGreen, title: "__**Tic-Tac-Toe**__" });
+		const embed = new DiscordEmbed({ color: Colors.LightGreen, title: "__**Schere, Stein, Papier**__" });
 		embed.setDescription("Bitte wählt beide unten eure Figur. Ihr könnt nur einmal wählen.\nDas Spiel läuft nach einer Minute ab.\n\n__Die **Regeln**:__");
 		embed.addField("✂️ Schere", "☑️ Papier\n❌ Stein", true);
 		embed.addField("🪨 Stein", "☑️ Schere\n❌ Papier", true);
@@ -529,25 +528,25 @@ export class DiscordBot extends Client {
 					style: "PRIMARY",
 					label: "Schere",
 					emoji: { name: "✂️" },
-					customID: `tictactoe|${interaction.user.id}|${interaction.options[0].value}|scissors`
+					customID: `rockpaperscissors|${interaction.user.id}|${interaction.options[0].value}|scissors`
 				},
 				{
 					type: "BUTTON",
 					style: "PRIMARY",
 					label: "Stein",
 					emoji: { name: "🪨" },
-					customID: `tictactoe|${interaction.user.id}|${interaction.options[0].value}|rock`
+					customID: `rockpaperscissors|${interaction.user.id}|${interaction.options[0].value}|rock`
 				},
 				{
 					type: "BUTTON",
 					style: "PRIMARY",
 					label: "Papier",
 					emoji: { name: "📑" },
-					customID: `tictactoe|${interaction.user.id}|${interaction.options[0].value}|paper`
+					customID: `rockpaperscissors|${interaction.user.id}|${interaction.options[0].value}|paper`
 				}
 			]
 		};
-		const message = await interaction.reply({ content: `${interaction.user} hat <@${interaction.options[0].value}> zu einer Runde ***Tic-Tac-Toe*** eingeladen!\nTrefft jetzt eure Auswahl!`, embeds: [embed.toJSON()], components: [buttons] });
+		const message = await interaction.reply({ content: `${interaction.user} hat <@${interaction.options[0].value}> zu einer Runde ***Schere, Stein, Papier*** eingeladen!\nTrefft jetzt eure Auswahl!`, embeds: [embed.toJSON()], components: [buttons] });
 		const id = setTimeout(() => {
 			if (buttons.components) {
 				buttons.components[0].disabled = true;
@@ -557,15 +556,15 @@ export class DiscordBot extends Client {
 			message.editResponse({ content: `Das Spiel zwischen ${interaction.user} und <@${interaction.options[0].value}> ist leider abgelaufen.\nFordert euch erneut heraus!`, components: [buttons] });
 			const games = JSON.parse(Deno.readTextFileSync("var/db/minispiele.json"));
 			const arr = [];
-			for (const game of games.tictactoe) {
+			for (const game of games.rps) {
 				if (!(game.challenger.id === interaction.user.id && game.challenged.id === interaction.options[0].value)) arr.push(game);
 			}
-			games.tictactoe = arr;
+			games.rps = arr;
 			Deno.writeTextFileSync("var/db/minispiele.json", JSON.stringify(games));
 		}, 60000);
 
 		const games = JSON.parse(Deno.readTextFileSync("var/db/minispiele.json"));
-		games.tictactoe.push({ id: id, challenger: { id: interaction.user.id, choice: undefined }, challenged: { id: interaction.options[0].value, choice: undefined } });
+		games.rps.push({ id: id, challenger: { id: interaction.user.id, choice: undefined }, challenged: { id: interaction.options[0].value, choice: undefined } });
 		Deno.writeTextFileSync("var/db/minispiele.json", JSON.stringify(games));
 	}
 
