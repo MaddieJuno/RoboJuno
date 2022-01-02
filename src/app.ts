@@ -62,5 +62,5 @@ async function logSetup(): Promise<void> {
 cron("0 0 0 * * *", async (): Promise<void> => await logSetup());
 await logSetup();
 
-const _bot: DiscordBot = new DiscordBot(ConfigManager.get().discord.token);
+const _bot: DiscordBot = new DiscordBot(ConfigManager.get().discord.token, { syncCommands: ConfigManager.get().discord.syncCommands });
 log.getLogger("System").info("App is running!");

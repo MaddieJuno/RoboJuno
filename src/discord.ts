@@ -14,6 +14,8 @@ import {
 	User,
 
 	log,
+MessageComponentData,
+Interaction,
 } from "../deps.ts";
 import type {
 	ClientOptions,
@@ -32,6 +34,7 @@ import { InstacordChecker } from "./modules/instacord.ts";
 
 import {
 	BirthdayCommand,
+	MinigameCommand,
 	StrikeCommand,
 	VersionCommand,
 } from "./interfaces/commands/commands.ts";
@@ -149,6 +152,7 @@ export class DiscordBot extends Client {
 			this.interactions.commands.create(VersionCommand.command, DiscordBot.guild);
 			this.interactions.commands.create(BirthdayCommand.command, DiscordBot.guild);
 			this.interactions.commands.create(StrikeCommand.strikesCommand, DiscordBot.guild);
+			this.interactions.commands.create(MinigameCommand.command, DiscordBot.guild);
 			(await this.interactions.commands.create(StrikeCommand.strikeCommand, DiscordBot.guild)).setPermissions([{ id: "912786366193098782", type: 1, permission: true }, { id: "912787189857943562", type: 1, permission: true }, { id: "910587532939526154", type: 1, permission: true }]);
 		}
 	}
@@ -279,6 +283,62 @@ export class DiscordBot extends Client {
 		thread.join();
 		/*if (this.user)
 			thread.addUser(this.user.id);*/
+	}
+
+	@event("interactionCreate")
+	private onInteractionCreate (interaction: Interaction): void {
+		if (interaction.isMessageComponent()) {
+			const args = (interaction.data as any).custom_id.split("|");
+			if (args[0] === "tictactoe") {
+				if (interaction.user.id !== args[1] && interaction.user.id !== args[2]) {
+					interaction.reply({ content: "Du kannst nicht bei einem fremden Spiel mitmachen. Wenn du selbst ein Spiel spielen möchtest, fordere jemanden heraus!\nDu erkennst Spiele, an denen du teilnehmen kannst, an einer Markierung deines Namens. Also, wenn die Nachricht gelb erscheint.", ephemeral: true });
+					return;
+				}
+
+				const games = JSON.parse(Deno.readTextFileSync("var/db/minispiele.json"));
+				for (const g in games.tictactoe) {
+					const game = games.tictactoe[g];
+					if (game.challenger.id === args[1] && game.challenged.id === args[2]) {
+						if (interaction.user.id === game.challenger.id) {
+							if (game.challenger.choice) {
+								interaction.respond({ content: "Du kannst nur einmal eine Auswahl treffen!", ephemeral: true });
+								return;
+							}
+							else {
+								game.challenger.choice = game.challenger.choice || args[3];
+								interaction.respond({ content: "Deine Wahl wurde aufgenommen, danke!", ephemeral: true });
+							}
+						}
+						else {
+							if (game.challenged.choice) {
+								interaction.respond({ content: "Du kannst nur einmal eine Auswahl treffen!", ephemeral: true });
+								return;
+							}
+							else {
+								game.challenged.choice = game.challenged.choice || args[3];
+								interaction.respond({ content: "Deine Wahl wurde aufgenommen, danke!", ephemeral: true });
+							}
+						}
+
+						if (game.challenger.choice && game.challenged.choice) {
+							if ((game.challenger.choice === "scissors" && game.challenged.choice === "paper") || (game.challenger.choice === "rock" && game.challenged.choice === "scissors") || (game.challenger.choice === "paper" && game.challenged.choice === "rock"))
+								interaction.message.edit({ content: `__Das Spiel ist vorbei!__\nDa <@${game.challenger.id}> *${game.challenger.choice}* gewählt hat und <@${game.challenged.id}> *${game.challenged.choice}* gewählt hat, hat **<@${game.challenger.id}>** gewonnen! Herzlichen Glückwunsch!`.replaceAll("scissors", "✂️ Schere").replaceAll("rock", "🪨 Stein").replaceAll("paper", "📑 Papier"), embeds: [], components: [] });
+							else
+								interaction.message.edit({ content: `__Das Spiel ist vorbei!__\nDa <@${game.challenger.id}> *${game.challenger.choice}* gewählt hat und <@${game.challenged.id}> *${game.challenged.choice}* gewählt hat, hat **<@${game.challenged.id}>** gewonnen! Herzlichen Glückwunsch!`.replaceAll("scissors", "✂️ Schere").replaceAll("rock", "🪨 Stein").replaceAll("paper", "📑 Papier"), embeds: [], components: [] });
+
+							clearTimeout(game.id);
+							const arr = [];
+							for (const a in games.tictactoe) {
+								if (a !== g) arr.push(games.tictactow[a]);
+							}
+							games.tictactoe = arr;
+						}
+						Deno.writeTextFileSync("var/db/minispiele.json", JSON.stringify(games));
+						break;
+					}
+				}
+			}
+		}
 	}
 
 	@slash("strike")
@@ -426,6 +486,69 @@ export class DiscordBot extends Client {
 		else {
 			interaction.reply({ content: "Zu diesem Mitglied ist uns der Geburtstag nicht bekannt.", ephemeral: true });
 		}
+	}
+
+	@subslash("minigame", "tictactoe")
+	private async onTicTacToe (interaction: ApplicationCommandInteraction): Promise<void> {
+		for (const game of JSON.parse(Deno.readTextFileSync("var/db/minispiele.json")).tictactoe) {
+			if ((game.challenger.id === interaction.user.id || game.challenged.id === interaction.user.id) && (game.challenger.id === interaction.options[0].value || game.challenged.id === interaction.options[0].value)) {
+				interaction.reply({ content: "Zwischen euch beiden läuft bereits ein Spiel. Beende erst das Andere!", ephemeral: true });
+				return;
+			}
+		}
+
+		const embed = new DiscordEmbed({ color: Colors.LightGreen, title: "__**Tic-Tac-Toe**__" });
+		embed.setDescription("Bitte wählt beide unten eure Figur. Ihr könnt nur einmal wählen.\nDas Spiel läuft nach einer Minute ab.\n\n__Die **Regeln**:__");
+		embed.addField("✂️ Schere", "☑️ Papier\n❌ Stein", true);
+		embed.addField("🪨 Stein", "☑️ Schere\n❌ Papier", true);
+		embed.addField("📑 Papier", "☑️ Stein\n❌ Schere", true);
+
+		const buttons: MessageComponentData = {
+			type: "ACTION_ROW",
+			components: [
+				{
+					type: "BUTTON",
+					style: "PRIMARY",
+					label: "Schere",
+					emoji: { name: "✂️" },
+					customID: `tictactoe|${interaction.user.id}|${interaction.options[0].value}|scissors`
+				},
+				{
+					type: "BUTTON",
+					style: "PRIMARY",
+					label: "Stein",
+					emoji: { name: "🪨" },
+					customID: `tictactoe|${interaction.user.id}|${interaction.options[0].value}|rock`
+				},
+				{
+					type: "BUTTON",
+					style: "PRIMARY",
+					label: "Papier",
+					emoji: { name: "📑" },
+					customID: `tictactoe|${interaction.user.id}|${interaction.options[0].value}|paper`
+				}
+			]
+		};
+		const message = await interaction.reply({ content: `${interaction.user} hat <@${interaction.options[0].value}> zu einer Runde ***Tic-Tac-Toe*** eingeladen!\nTrefft jetzt eure Auswahl!`, embeds: [embed.toJSON()], components: [buttons] });
+		const id = setTimeout(() => {
+			if (buttons.components) {
+				buttons.components[0].disabled = true;
+				buttons.components[1].disabled = true;
+				buttons.components[2].disabled = true;
+			}
+			message.editResponse({ content: `Das Spiel zwischen ${interaction.user} und <@${interaction.options[0].value}> ist leider abgelaufen.\nFordert euch erneut heraus!`, components: [buttons] });
+			const games = JSON.parse(Deno.readTextFileSync("var/db/minispiele.json"));
+			const arr = [];
+			for (const game of games.tictactoe) {
+				if (!(game.challenger.id === interaction.user.id && game.challenged.id === interaction.options[0].value)) arr.push(game);
+			}
+			games.tictactoe = arr;
+			Deno.writeTextFileSync("var/db/minispiele.json", JSON.stringify(games));
+		}, 60000);
+
+		const games = JSON.parse(Deno.readTextFileSync("var/db/minispiele.json"));
+		games.tictactoe.push({ id: id, challenger: { id: interaction.user.id, choice: undefined }, challenged: { id: interaction.options[0].value, choice: undefined } });
+		Deno.writeTextFileSync("var/db/minispiele.json", JSON.stringify(games));
 	}
 
 	@slash("version")
