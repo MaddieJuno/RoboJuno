@@ -1,5 +1,2 @@
-- Links zu Insta-Beiträgen sind nun im #instacord erlaubt.
-- Erkennt einen Leave/Kick/Ban eines Mitgliedes.
-- Anpassungen der Embeds.
-- Changelog im `/version`-Command eingefügt.
-- Kleine Fehlerbehebungen.
+- Minispiele-Funkation! Mit: Tic-Tac-Toe!
+- Debug-Events für Gateway-Error zur Fehleranalyse
