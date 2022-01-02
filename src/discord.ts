@@ -45,7 +45,7 @@ interface BotOptions extends ClientOptions {
 
 export class DiscordBot extends Client {
 	private syncCommands: boolean;
-	private readonly VERSION = "v1.1.1.10";
+	private readonly VERSION = "v1.1.2.11";
 	private preCounter = 0;
 	private isPre = false;
 
@@ -323,8 +323,10 @@ export class DiscordBot extends Client {
 						if (game.challenger.choice && game.challenged.choice) {
 							if ((game.challenger.choice === "scissors" && game.challenged.choice === "paper") || (game.challenger.choice === "rock" && game.challenged.choice === "scissors") || (game.challenger.choice === "paper" && game.challenged.choice === "rock"))
 								interaction.message.edit({ content: `__Das Spiel ist vorbei!__\nDa <@${game.challenger.id}> *${game.challenger.choice}* gewählt hat und <@${game.challenged.id}> *${game.challenged.choice}* gewählt hat, hat **<@${game.challenger.id}>** gewonnen! Herzlichen Glückwunsch!`.replaceAll("scissors", "✂️ Schere").replaceAll("rock", "🪨 Stein").replaceAll("paper", "📑 Papier"), embeds: [], components: [] });
-							else
+							else if ((game.challenged.choice === "scissors" && game.challenger.choice === "paper") || (game.challenged.choice === "rock" && game.challenger.choice === "scissors") || (game.challenged.choice === "paper" && game.challenger.choice === "rock"))
 								interaction.message.edit({ content: `__Das Spiel ist vorbei!__\nDa <@${game.challenger.id}> *${game.challenger.choice}* gewählt hat und <@${game.challenged.id}> *${game.challenged.choice}* gewählt hat, hat **<@${game.challenged.id}>** gewonnen! Herzlichen Glückwunsch!`.replaceAll("scissors", "✂️ Schere").replaceAll("rock", "🪨 Stein").replaceAll("paper", "📑 Papier"), embeds: [], components: [] });
+							else
+							interaction.message.edit({ content: `__Das Spiel ist vorbei!__\nDa sowohl <@${game.challenger.id}>, als auch <@${game.challenged.id}>, *${game.challenger.choice}* gewählt haben, steht es **unentschieden**! Veruscht es nochmals!`.replaceAll("scissors", "✂️ Schere").replaceAll("rock", "🪨 Stein").replaceAll("paper", "📑 Papier"), embeds: [], components: [] });
 
 							clearTimeout(game.id);
 							const arr = [];
