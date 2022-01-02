@@ -29,6 +29,7 @@ export class ConfigManager {
 				birthdayChannel: config?.discord?.birthdayChannel || { id: "", token: "" },
 				instacordChannel: config?.discord?.instacordChannel || "",
 				creativeChannel: config?.discord?.creativeChannel || "",
+				gameChannel: config?.discord.creativeChannel || "",
 				countChannel: config?.discord?.countChannel || "",
 				modLogChannel: config?.discord?.modLogChannel || "",
 				adminRoles: config?.discord?.adminRoles || [],

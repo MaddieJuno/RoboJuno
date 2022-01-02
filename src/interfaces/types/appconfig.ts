@@ -19,6 +19,7 @@ export type AppConfig = {
 		},
 		instacordChannel: string,
 		creativeChannel: string,
+		gameChannel: string,
 		countChannel: {
 			id: string
 		},

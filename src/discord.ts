@@ -45,7 +45,7 @@ interface BotOptions extends ClientOptions {
 
 export class DiscordBot extends Client {
 	private syncCommands: boolean;
-	private readonly VERSION = "v1.1.3.12";
+	private readonly VERSION = "v1.1.4.13";
 	private preCounter = 0;
 	private isPre = false;
 
@@ -503,6 +503,11 @@ export class DiscordBot extends Client {
 
 	@subslash("minigame", "tictactoe")
 	private async onTicTacToe (interaction: ApplicationCommandInteraction): Promise<void> {
+		if (interaction.channel?.id !== ConfigManager.get().discord.gameChannel) {
+			interaction.reply({ content: `Beschränke Minispiele bitte nur auf den <#${ConfigManager.get().discord.gameChannel}>, damit der Chat hier übersichtlich bleibt.`, ephemeral: true });
+			return;
+		}
+
 		for (const game of JSON.parse(Deno.readTextFileSync("var/db/minispiele.json")).tictactoe) {
 			if ((game.challenger.id === interaction.user.id || game.challenged.id === interaction.user.id) && (game.challenger.id === interaction.options[0].value || game.challenged.id === interaction.options[0].value)) {
 				interaction.reply({ content: "Zwischen euch beiden läuft bereits ein Spiel. Beende erst das Andere!", ephemeral: true });
