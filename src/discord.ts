@@ -285,62 +285,6 @@ export class DiscordBot extends Client {
 			thread.addUser(this.user.id);*/
 	}
 
-<<<<<<< HEAD
-	@event("interactionCreate")
-	private onInteractionCreate (interaction: Interaction): void {
-		if (interaction.isMessageComponent()) {
-			const args = (interaction.data as any).custom_id.split("|");
-			if (args[0] === "tictactoe") {
-				if (interaction.user.id !== args[1] && interaction.user.id !== args[2]) {
-					interaction.reply({ content: "Du kannst nicht bei einem fremden Spiel mitmachen. Wenn du selbst ein Spiel spielen möchtest, fordere jemanden heraus!\nDu erkennst Spiele, an denen du teilnehmen kannst, an einer Markierung deines Namens. Also, wenn die Nachricht gelb erscheint.", ephemeral: true });
-					return;
-				}
-
-				const games = JSON.parse(Deno.readTextFileSync("var/db/minispiele.json"));
-				for (const g in games.tictactoe) {
-					const game = games.tictactoe[g];
-					if (game.challenger.id === args[1] && game.challenged.id === args[2]) {
-						if (interaction.user.id === game.challenger.id) {
-							if (game.challenger.choice) {
-								interaction.respond({ content: "Du kannst nur einmal eine Auswahl treffen!", ephemeral: true });
-								return;
-							}
-							else {
-								game.challenger.choice = game.challenger.choice || args[3];
-								interaction.respond({ content: "Deine Wahl wurde aufgenommen, danke!", ephemeral: true });
-							}
-						}
-						else {
-							if (game.challenged.choice) {
-								interaction.respond({ content: "Du kannst nur einmal eine Auswahl treffen!", ephemeral: true });
-								return;
-							}
-							else {
-								game.challenged.choice = game.challenged.choice || args[3];
-								interaction.respond({ content: "Deine Wahl wurde aufgenommen, danke!", ephemeral: true });
-							}
-						}
-
-						if (game.challenger.choice && game.challenged.choice) {
-							if ((game.challenger.choice === "scissors" && game.challenged.choice === "paper") || (game.challenger.choice === "rock" && game.challenged.choice === "scissors") || (game.challenger.choice === "paper" && game.challenged.choice === "rock"))
-								interaction.message.edit({ content: `__Das Spiel ist vorbei!__\nDa <@${game.challenger.id}> *${game.challenger.choice}* gewählt hat und <@${game.challenged.id}> *${game.challenged.choice}* gewählt hat, hat **<@${game.challenger.id}>** gewonnen! Herzlichen Glückwunsch!`.replaceAll("scissors", "✂️ Schere").replaceAll("rock", "🪨 Stein").replaceAll("paper", "📑 Papier"), embeds: [], components: [] });
-							else
-								interaction.message.edit({ content: `__Das Spiel ist vorbei!__\nDa <@${game.challenger.id}> *${game.challenger.choice}* gewählt hat und <@${game.challenged.id}> *${game.challenged.choice}* gewählt hat, hat **<@${game.challenged.id}>** gewonnen! Herzlichen Glückwunsch!`.replaceAll("scissors", "✂️ Schere").replaceAll("rock", "🪨 Stein").replaceAll("paper", "📑 Papier"), embeds: [], components: [] });
-
-							clearTimeout(game.id);
-							const arr = [];
-							for (const a in games.tictactoe) {
-								if (a !== g) arr.push(games.tictactow[a]);
-							}
-							games.tictactoe = arr;
-						}
-						Deno.writeTextFileSync("var/db/minispiele.json", JSON.stringify(games));
-						break;
-					}
-				}
-			}
-		}
-=======
 	@event()
 	private error (error: Error): void {
 		log.getLogger("Discord").error(error);
@@ -350,7 +294,6 @@ export class DiscordBot extends Client {
 	private onGatewayError (error: ErrorEvent, nums: any): void {
 		log.getLogger("Discord").error(error.error);
 		log.getLogger("Discord").error(nums);
->>>>>>> feature/error-handler
 	}
 
 	@slash("strike")
