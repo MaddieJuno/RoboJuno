@@ -2,6 +2,7 @@ export type AppConfig = {
 	discord: {
 		token: string,
 		guild: string,
+		syncCommands: boolean,
 		//userRole: string,
 		//drinkerRole: string,
 		memberAdd: {

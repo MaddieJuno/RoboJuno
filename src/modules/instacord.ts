@@ -34,7 +34,7 @@ export class InstacordChecker {
 	}
 
 	public static async actMessage (message: Message): Promise<void> {
-		const reply: Message = await message.reply(`${message.member} bitte keine reinen Texte in diesem Channel.\nDies ist ein Channel nur für Kunst in Form von Bildern. Du kannst im Thread unterhalb des jeweiligen Bildes etwas dazu sagen.\nWenn du über etwas Kreatives reden möchtest, kannst du das gerne in <#${ConfigManager.get().discord.creativeChannel}> tun.`);
+		const reply: Message = await message.channel.send(`${message.member} bitte keine reinen Texte in diesem Channel.\nDies ist ein Channel nur für Kunst in Form von Bildern. Du kannst im Thread unterhalb des jeweiligen Bildes etwas dazu sagen.\nWenn du über etwas Kreatives reden möchtest, kannst du das gerne in <#${ConfigManager.get().discord.creativeChannel}> tun.`);
 		message.delete();
 		setTimeout((): void => {
 			reply.delete();

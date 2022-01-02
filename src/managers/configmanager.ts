@@ -22,6 +22,7 @@ export class ConfigManager {
 		return {
 			discord: {
 				token: config?.discord?.token || "",
+				syncCommands: config?.discord?.syncCommands || false,
 				guild: config?.discord?.guild || "",
 				memberAdd: config?.discord?.memberAdd || { id: "", token: "" },
 				welcomeChannel: config?.discord?.welcomeChannel || { id: "", token: "" },
