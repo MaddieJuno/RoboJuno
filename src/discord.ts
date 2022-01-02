@@ -45,7 +45,7 @@ interface BotOptions extends ClientOptions {
 
 export class DiscordBot extends Client {
 	private syncCommands: boolean;
-	private readonly VERSION = "v1.0.0.8";
+	private readonly VERSION = "v1.1.0.9";
 	private preCounter = 0;
 	private isPre = false;
 
