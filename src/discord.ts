@@ -281,6 +281,17 @@ export class DiscordBot extends Client {
 			thread.addUser(this.user.id);*/
 	}
 
+	@event()
+	private error (error: Error): void {
+		log.getLogger("Discord").error(error);
+	}
+
+	@event("gatewayError")
+	private onGatewayError (error: ErrorEvent, nums: any): void {
+		log.getLogger("Discord").error(error.error);
+		log.getLogger("Discord").error(nums);
+	}
+
 	@slash("strike")
 	private async onStrike (interaction: ApplicationCommandInteraction): Promise<void> {
 		if (this.isMod(await interaction.resolved.members[interaction.options[0].value].roles.array() || interaction.resolved.members[interaction.options[0].value].user.bot)) {

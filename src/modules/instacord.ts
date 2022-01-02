@@ -34,14 +34,14 @@ export class InstacordChecker {
 	}
 
 	public static async actMessage (message: Message): Promise<void> {
-		const reply: Message = await message.reply(`${message.member} bitte keine reinen Texte in diesem Channel.\nDies ist ein Channel nur für Kunst in Form von Bildern. Du kannst im Thread unterhalb des jeweiligen Bildes etwas dazu sagen.\nWenn du über etwas Kreatives reden möchtest, kannst du das gerne in <#${ConfigManager.get().discord.creativeChannel}> tun.`);
+		const reply: Message = await message.channel.send(`${message.member} bitte keine reinen Texte in diesem Channel.\nDies ist ein Channel nur für Kunst in Form von Bildern. Du kannst im Thread unterhalb des jeweiligen Bildes etwas dazu sagen.\nWenn du über etwas Kreatives reden möchtest, kannst du das gerne in <#${ConfigManager.get().discord.creativeChannel}> tun.`);
 		message.delete();
 		setTimeout((): void => {
 			reply.delete();
 		}, 30000);
 
 		let pnSuccessfull = false;
-		try {
+		//try {
 			if (message.content.length > 0) {
 				const embed = new DiscordEmbed({ color: Colors.DarkGrey });
 				embed.setTitle("Damit du deinen Text vom #instacord nicht komplett neu schreiben musst, ist hier eine Kopie deiner Nachricht:");
@@ -49,11 +49,11 @@ export class InstacordChecker {
 				await message.author.send({ embeds: [embed.toJSON()] });
 				pnSuccessfull = true;
 			}
-		}
+		/*}
 		catch {
 			pnSuccessfull = false;
 		}
-		finally {
+		finally {*/
 			if (message.content.length > 0) {
 				const embed = new DiscordEmbed({ color: Colors.DarkGrey });
 				embed.setTitle(`Text von ${message.member?.nick || message.member?.user.username} im #instacord!`);
@@ -62,7 +62,7 @@ export class InstacordChecker {
 				embed.addField("__PN geschickt__", pnSuccessfull ? "✅ ja" : "❌ nein", false);
 				(await message.guild?.channels.get(ConfigManager.get().discord.modLogChannel) as TextChannel).send({ embeds: [embed.toJSON()] });
 			}
-		}
+		//}
 
 		log.getLogger("Discord").warning(`Member ${message.author.username}#${message.author.discriminator} (${message.author.id}) posted wrong content into #instacord!`);
 	}
