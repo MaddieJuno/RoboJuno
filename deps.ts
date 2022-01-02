@@ -30,7 +30,7 @@ export {
 	Interaction,
 	slash,
 	subslash,
-} from "https://code.harmony.rocks/7755687024c962d28213e3f4ca5ffa51677af1fb/mod.ts";
+} from "https://deno.land/x/harmony@v2.4.0/mod.ts";;
 export type {
 	ApplicationCommand,
 	ApplicationCommandInteraction,
@@ -47,7 +47,7 @@ export type {
 	ThreadChannel,
 	UserPayload,
 	User,
-} from "https://code.harmony.rocks/7755687024c962d28213e3f4ca5ffa51677af1fb/mod.ts";
+} from "https://deno.land/x/harmony@v2.4.0/mod.ts";
 
 export {
 	cron,
