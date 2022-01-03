@@ -19,6 +19,19 @@ export class Command {
 						required: true
 					}
 				]
+			},
+			{
+				type: ApplicationCommandOptionType.SUB_COMMAND,
+				name: "tictactoe",
+				description: "Spiele Tic-Tac-Toe gegen jemanden!",
+				options: [
+					{
+						type: ApplicationCommandOptionType.USER,
+						name: "mitglied",
+						description: "Gegen wen möchtest du spielen?",
+						required: true
+					}
+				]
 			}
 		]
 	};
