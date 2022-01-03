@@ -1,2 +1,2 @@
-- Minispiele-Funkation! Mit: Tic-Tac-Toe!
+- Minispiele-Funkation! Mit: Schnick, Schnack, Schnuck und Tic-Tac-Toe
 - Debug-Events für Gateway-Error zur Fehleranalyse
