@@ -10,6 +10,7 @@ import type {
 	DiscordThumbnail,
 	DiscordVideo,
 } from "../interfaces/types/discord.ts";
+import { Embed as StandardEmbed } from "../../deps.ts";
 
 export class DiscordEmbed {
 	private readonly MAXCHARS: number = 6000;
@@ -221,6 +222,10 @@ export class DiscordEmbed {
 			author: this.author,
 			fields: this.fields
 		};
+	}
+
+	public toEmbed (): StandardEmbed {
+		return new StandardEmbed(this.toJSON());
 	}
 
 	public toString (): string {
