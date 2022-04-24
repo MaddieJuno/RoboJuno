@@ -34,6 +34,7 @@ export class ConfigManager {
 				modLogChannel: config?.discord?.modLogChannel || "",
 				adminRoles: config?.discord?.adminRoles || [],
 				modRole: config?.discord?.modRole || "",
+				author: config?.discord?.modRole || "",
 			},
 			logging: {
 				discord: {

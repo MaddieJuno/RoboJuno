@@ -123,7 +123,7 @@ export class DiscordBot extends Client {
 			Deno.writeTextFileSync("var/db/strikes.json", JSON.stringify(news));
 			log.getLogger("Discord").info("Strikes wurden überprüft");
 		});
-		cron("0 0 6 * * *", async (): Promise<void> => {
+		cron("0 26 13 * * *", async (): Promise<void> => {
 			const now = new Date();
 			const birthdays = JSON.parse(Deno.readTextFileSync("var/db/geburtstage.json"));
 			const todays: string[] = [];
@@ -138,15 +138,24 @@ export class DiscordBot extends Client {
 				}
 			}
 
+			const embed = new DiscordEmbed();
+			embed.setTitle("**Heute ist Geburtstag! 🎉 🎉 🎉**");
+			let births: string;
 			if (todays.length === 0) return;
 			else if (todays.length === 1) {
-				(await DiscordBot.guild?.channels.fetch(ConfigManager.get().discord.birthdayChannel.id) as TextChannel).send(`Heute feiern wir den Geburtstag von ${todays[0]}! 🥳🥳🥳`);
+				births = todays.pop() || "";
 			}
 			else {
 				const last = todays.pop();
-				const births = `${todays.join(", ")} und ${last}`;
-				(await DiscordBot.guild?.channels.fetch(ConfigManager.get().discord.birthdayChannel.id) as TextChannel).send(`Heute feiern wir die Geburtstage von ${births}! Lasst sie hoch leben! 🥳🥳🥳`);
+				births = `${todays.join(", ")} und ${last}`;
 			}
+			embed.setDescription(`Heute lassen wir ${births} hoch leben und feiern den ganzen Tag!\n🎊 🎊 🎊`);
+			embed.setColor(Math.floor(Math.random() * Math.pow(256, 3)));
+
+			if (ConfigManager.get().discord.birthdayChannel.token)
+				await fetch(`https://discordapp.com/api/webhooks/${ConfigManager.get().discord.birthdayChannel.id}/${ConfigManager.get().discord.birthdayChannel.token}`, { method: "POST", body: JSON.stringify({ content: "@everyone Holt eure Partyhüte raus! 🥳 🥳 🥳", embeds: [embed.toJSON()], username: "Happy Birthday" }), headers: { "Content-Type": "application/json" } });
+			else
+				(await DiscordBot.guild?.channels.fetch(ConfigManager.get().discord.birthdayChannel.id) as TextChannel).send("@everyone Holt eure Partyhüte raus! 🥳 🥳 🥳", embed.toEmbed());
 		});
 
 		if (this.syncCommands) {

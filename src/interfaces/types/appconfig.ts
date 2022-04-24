@@ -25,7 +25,8 @@ export type AppConfig = {
 		},
 		modLogChannel: string,
 		adminRoles: string[],
-		modRole: string
+		modRole: string,
+		author: string,
 		//twitchLog: {
 		//	id: string,
 		//	token?: string,
