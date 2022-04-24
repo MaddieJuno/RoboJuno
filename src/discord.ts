@@ -46,7 +46,7 @@ interface BotOptions extends ClientOptions {
 
 export class DiscordBot extends Client {
 	private syncCommands: boolean;
-	private readonly VERSION = "v1.2.1.16";
+	private readonly VERSION = "v1.2.2.17";
 	private preCounter = 0;
 	private isPre = false;
 
@@ -123,7 +123,7 @@ export class DiscordBot extends Client {
 			Deno.writeTextFileSync("var/db/strikes.json", JSON.stringify(news));
 			log.getLogger("Discord").info("Strikes wurden überprüft");
 		});
-		cron("0 26 13 * * *", async (): Promise<void> => {
+		cron("0 0 6 * * *", async (): Promise<void> => {
 			const now = new Date();
 			const birthdays = JSON.parse(Deno.readTextFileSync("var/db/geburtstage.json"));
 			const todays: string[] = [];
