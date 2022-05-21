@@ -163,7 +163,7 @@ export class DiscordBot extends Client {
 			this.interactions.commands.create(BirthdayCommand.command, DiscordBot.guild);
 			this.interactions.commands.create(StrikeCommand.strikesCommand, DiscordBot.guild);
 			this.interactions.commands.create(MinigameCommand.command, DiscordBot.guild);
-			(await this.interactions.commands.create(StrikeCommand.strikeCommand, DiscordBot.guild)).setPermissions([{ id: "912786366193098782", type: 1, permission: true }, { id: "912787189857943562", type: 1, permission: true }, { id: "910587532939526154", type: 1, permission: true }]);
+			this.interactions.commands.create(StrikeCommand.strikeCommand, DiscordBot.guild);
 		}
 	}
 
