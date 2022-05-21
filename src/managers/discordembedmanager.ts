@@ -38,7 +38,7 @@ export class DiscordEmbed {
 		this.url = embed?.url || undefined;
 		this.timestamp = embed?.timestamp || new Date().toISOString();
 		this.color = embed?.color || Colors.Blue;
-		this.setFooter(embed?.footer || { text: "Develeon64", icon_url: `https://cdn.discordapp.com/avatars/298215920709664768/8baae47e2e1bb0ab72b6a3881f7116d6.png` });
+		this.setFooter(embed?.footer || { text: "Develeon64", icon_url: "https://cdn.discordapp.com/attachments/344276509567090689/975281528173121606/Chrishi_Blurple-Dark.png" });
 		this.image = embed?.image || undefined;
 		this.thumbnail = embed?.thumbnail || undefined;
 		this.video = embed?.video || undefined;
