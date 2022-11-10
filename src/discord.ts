@@ -162,7 +162,14 @@ export class DiscordBot extends Client {
 		});
 
 		if (this.syncCommands) {
-			this.interactions.commands.create(VersionCommand.command, DiscordBot.guild);
+			for (const command of (await this.interactions.commands.all())?.array() || []) {
+				command.delete();
+			}
+			for (const command of (await (await this.guilds.resolve(ConfigManager.get().discord.guild))?.commands.all())?.array() || []) {
+				command.delete();
+			}
+
+			this.interactions.commands.create(VersionCommand.command);
 			this.interactions.commands.create(BirthdayCommand.command, DiscordBot.guild);
 			this.interactions.commands.create(StrikeCommand.strikesCommand, DiscordBot.guild);
 			this.interactions.commands.create(MinigameCommand.command, DiscordBot.guild);
