@@ -46,7 +46,7 @@ interface BotOptions extends ClientOptions {
 
 export class DiscordBot extends Client {
 	private syncCommands: boolean;
-	private readonly VERSION = "v1.2.4.19";
+	private readonly VERSION = "v1.2.5.20";
 	private preCounter = 0;
 	private isPre = false;
 
@@ -129,11 +129,14 @@ export class DiscordBot extends Client {
 			const todays: string[] = [];
 			for (const birth in birthdays) {
 				if (birthdays[birth].day === now.getDate() && birthdays[birth].month === now.getMonth() + 1) {
-					if (birthdays[birth].year) {
-						todays.push(`<@${birth}> (${this.calcAge(new Date(birthdays[birth].year, birthdays[birth].month - 1, birthdays[birth].day))})`);
-					}
-					else {
-						todays.push(`<@${birth}>`);
+					const birthday = await (await this.guilds.resolve(ConfigManager.get().discord.guild))?.members.resolve(birth);
+					if (birthday) {
+						if (birthdays[birth].year) {
+							todays.push(`<@${birth}> [${birthday.displayName}] (${this.calcAge(new Date(birthdays[birth].year, birthdays[birth].month - 1, birthdays[birth].day))})`);
+						}
+						else {
+							todays.push(`<@${birth}> [${birthday.displayName}]`);
+						}
 					}
 				}
 			}
@@ -159,7 +162,14 @@ export class DiscordBot extends Client {
 		});
 
 		if (this.syncCommands) {
-			this.interactions.commands.create(VersionCommand.command, DiscordBot.guild);
+			for (const command of (await this.interactions.commands.all())?.array() || []) {
+				command.delete();
+			}
+			for (const command of (await (await this.guilds.resolve(ConfigManager.get().discord.guild))?.commands.all())?.array() || []) {
+				command.delete();
+			}
+
+			this.interactions.commands.create(VersionCommand.command);
 			this.interactions.commands.create(BirthdayCommand.command, DiscordBot.guild);
 			this.interactions.commands.create(StrikeCommand.strikesCommand, DiscordBot.guild);
 			this.interactions.commands.create(MinigameCommand.command, DiscordBot.guild);
