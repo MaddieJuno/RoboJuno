@@ -129,11 +129,14 @@ export class DiscordBot extends Client {
 			const todays: string[] = [];
 			for (const birth in birthdays) {
 				if (birthdays[birth].day === now.getDate() && birthdays[birth].month === now.getMonth() + 1) {
-					if (birthdays[birth].year) {
-						todays.push(`<@${birth}> (${this.calcAge(new Date(birthdays[birth].year, birthdays[birth].month - 1, birthdays[birth].day))})`);
-					}
-					else {
-						todays.push(`<@${birth}>`);
+					const birthday = await (await this.guilds.resolve(ConfigManager.get().discord.guild))?.members.resolve(birth);
+					if (birthday) {
+						if (birthdays[birth].year) {
+							todays.push(`<@${birth}> [${birthday.displayName}] (${this.calcAge(new Date(birthdays[birth].year, birthdays[birth].month - 1, birthdays[birth].day))})`);
+						}
+						else {
+							todays.push(`<@${birth}> [${birthday.displayName}]`);
+						}
 					}
 				}
 			}
