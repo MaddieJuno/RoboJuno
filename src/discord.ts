@@ -46,7 +46,7 @@ interface BotOptions extends ClientOptions {
 
 export class DiscordBot extends Client {
 	private syncCommands: boolean;
-	private readonly VERSION = "v1.2.6.21";
+	private readonly VERSION = "v1.2.7.22";
 	private preCounter = 0;
 	private isPre = false;
 
@@ -625,6 +625,8 @@ export class DiscordBot extends Client {
 
 	@slash("version")
 	private async onVersion (interaction: ApplicationCommandInteraction): Promise<void> {
+		const defer = await interaction.defer(false);
+
 		const embed = new DiscordEmbed();
 		embed.setTitle(`__Version: ${this.VERSION}__`);
 		embed.setThumbnail({ url: `https://cdn.discordapp.com/avatars/${this.user?.id}/${this.user?.avatar}.png` });
@@ -639,7 +641,8 @@ export class DiscordBot extends Client {
 		embed.addField("__Author__", "Ich werde entwickelt von:\n<@298215920709664768> (Develeon#1010)\nGitHub: [Develeon64](https://github.com/Develeon64)", true);
 		embed.addField("__Code__", "Mein Code ist auf GitHub unter\n[MaddieJuno/RoboJuno](https://github.com/MaddieJuno/RoboJuno)", true);
 
-		interaction.reply({ embeds: [embed.toJSON()] });
+		//interaction.reply({ embeds: [embed.toJSON()] });
+		defer.editResponse({ embeds: [embed.toJSON()] });
 	}
 
 	private calcAge (date: Date): number {
