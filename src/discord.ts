@@ -7,6 +7,7 @@ import {
 	event,
 	Guild,
 	Intents,
+	Interaction,
 	slash,
 	subslash,
 	TextChannel,
@@ -14,8 +15,6 @@ import {
 	User,
 
 	log,
-MessageComponentData,
-Interaction,
 } from "../deps.ts";
 import type {
 	ClientOptions,
